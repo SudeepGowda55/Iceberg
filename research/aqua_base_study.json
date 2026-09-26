@@ -1,0 +1,17 @@
+{
+ "measuredAt": "2026-09-26T13:42:26.850Z",
+ "blocks": [
+  48000000,
+  51820178
+ ],
+ "strategies": 872,
+ "makers": 144,
+ "neverFilled": 451,
+ "neverFilledPct": 51.7,
+ "makersNeverFilled": 66,
+ "officialRouterStrategies": 588,
+ "liveButNeverFilled": 80,
+ "liveUnbacked": 41,
+ "liveBackedButIdle": 30,
+ "liveOtherTokens": 9
+}

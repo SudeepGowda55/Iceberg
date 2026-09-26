@@ -1,0 +1,41 @@
+{
+  "benchmarkValueUsdc6": 10866199119,
+  "endPrice8": 279954000000,
+  "minutes": 1440,
+  "startPrice8": 263514000000,
+  "venue0": {
+    "arbitrageProfitUsdc6": 1011106,
+    "lambdaWad": 1000000000000000000,
+    "lpLossVsRebalancedUsdc6": 1076975,
+    "name": "plain Uniswap v4 pool (full range)",
+    "trades": 834
+  },
+  "venue1": {
+    "arbitrageProfitUsdc6": 1011251,
+    "lambdaWad": 1000000000000000000,
+    "lpLossVsRebalancedUsdc6": 1075965,
+    "name": "Iceberg v4 hook, lambda 100%",
+    "trades": 834
+  },
+  "venue2": {
+    "arbitrageProfitUsdc6": 817668,
+    "lambdaWad": 500000000000000000,
+    "lpLossVsRebalancedUsdc6": 887621,
+    "name": "Iceberg v4 hook, lambda 50%",
+    "trades": 938
+  },
+  "venue3": {
+    "arbitrageProfitUsdc6": 795426,
+    "lambdaWad": 390000000000000000,
+    "lpLossVsRebalancedUsdc6": 868655,
+    "name": "Iceberg v4 hook, lambda 39%",
+    "trades": 971
+  },
+  "venue4": {
+    "arbitrageProfitUsdc6": 817668,
+    "lambdaWad": 500000000000000000,
+    "lpLossVsRebalancedUsdc6": 887621,
+    "name": "Iceberg 1inch Aqua position, lambda 50%",
+    "trades": 938
+  }
+}
