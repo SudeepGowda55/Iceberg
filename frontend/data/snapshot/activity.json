@@ -1,0 +1,654 @@
+{
+ "items": [
+  {
+   "kind": "v4swap",
+   "text": "Uniswap v4: sold 0.00038 WETH for 1.01 USDC",
+   "block": 51829031,
+   "tx": "0xc9379ce4b1a92fea397af910c44ff2acd2fe055da6e56963608e1e11029291b3",
+   "key": "0xc9379ce4b1a92fea397af910c44ff2acd2fe055da6e56963608e1e11029291b33",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "v4 split: λ 80%, passive 0.4001 WETH + 1,074.59 USDC frozen for block 51829031",
+   "block": 51829031,
+   "tx": "0xc9379ce4b1a92fea397af910c44ff2acd2fe055da6e56963608e1e11029291b3",
+   "key": "0xc9379ce4b1a92fea397af910c44ff2acd2fe055da6e56963608e1e11029291b30",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "lambda",
+   "text": "keeper set λ = 80% for the Uniswap v4 pool",
+   "block": 51829030,
+   "tx": "0x1d4d904f415ac13712123095ad6949d316e630dd35f7e8ca1caca16a29c56747",
+   "key": "0x1d4d904f415ac13712123095ad6949d316e630dd35f7e8ca1caca16a29c567470",
+   "source": "keeper"
+  },
+  {
+   "kind": "lambda",
+   "text": "keeper set λ = 80% for the 1inch Aqua position",
+   "block": 51829029,
+   "tx": "0x3bdc12b312fcd64ccd6277fe8fa8306e32102b56fc0c2178f212e04982b0e277",
+   "key": "0x3bdc12b312fcd64ccd6277fe8fa8306e32102b56fc0c2178f212e04982b0e2770",
+   "source": "keeper"
+  },
+  {
+   "kind": "lambda",
+   "text": "keeper set λ = 75% for the 1inch Aqua position",
+   "block": 51829002,
+   "tx": "0xf77b27aaba5c7b0fc2f1e642abce316f3ba9a89613b805efa7102d25ba953b56",
+   "key": "0xf77b27aaba5c7b0fc2f1e642abce316f3ba9a89613b805efa7102d25ba953b560",
+   "source": "keeper"
+  },
+  {
+   "kind": "rebalance",
+   "text": "shipped Aqua strategy 0x79e66cd5… (balanced at the live price)",
+   "block": 51829001,
+   "tx": "0xda8c3d3de30e20e060c0362f056d9326cfe68eeb0108c5704056c7c2b350a0a4",
+   "key": "0xda8c3d3de30e20e060c0362f056d9326cfe68eeb0108c5704056c7c2b350a0a40",
+   "source": "keeper"
+  },
+  {
+   "kind": "rebalance",
+   "text": "rebalance: retired Aqua strategy 0xa3be5bdb…",
+   "block": 51828997,
+   "tx": "0xe1d9e61efac04fc69dffbc4541a39f1843d0dd52d0200d04233e23a7f155293e",
+   "key": "0xe1d9e61efac04fc69dffbc4541a39f1843d0dd52d0200d04233e23a7f155293e0",
+   "source": "keeper"
+  },
+  {
+   "kind": "sharedswap",
+   "text": "1inch official router (shared liquidity): sold 0.00900 WETH for 24.53 USDC",
+   "block": 51828992,
+   "tx": "0x5805a0f70d2b3bfa4c618bd1605055758189f178685474a8e4729e0fb936c9ed",
+   "key": "0x5805a0f70d2b3bfa4c618bd1605055758189f178685474a8e4729e0fb936c9ed17",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 0.00900 WETH deposited back into Morpho",
+   "block": 51828992,
+   "tx": "0x5805a0f70d2b3bfa4c618bd1605055758189f178685474a8e4729e0fb936c9ed",
+   "key": "0x5805a0f70d2b3bfa4c618bd1605055758189f178685474a8e4729e0fb936c9ed16",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "sharedswap",
+   "text": "1inch official router (shared liquidity): bought 0.00917 WETH for 25.00 USDC",
+   "block": 51828990,
+   "tx": "0x0f70a8d75c941ed3c40c356c1360d968d9460516bd18b08818459cb16814174d",
+   "key": "0x0f70a8d75c941ed3c40c356c1360d968d9460516bd18b08818459cb16814174d28",
+   "source": "UI"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua fill withdrew 0.00917 WETH from its Morpho vault",
+   "block": 51828990,
+   "tx": "0x0f70a8d75c941ed3c40c356c1360d968d9460516bd18b08818459cb16814174d",
+   "key": "0x0f70a8d75c941ed3c40c356c1360d968d9460516bd18b08818459cb16814174d8",
+   "source": "UI"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 25.00000 USDC deposited back into Morpho",
+   "block": 51828990,
+   "tx": "0x0f70a8d75c941ed3c40c356c1360d968d9460516bd18b08818459cb16814174d",
+   "key": "0x0f70a8d75c941ed3c40c356c1360d968d9460516bd18b08818459cb16814174d27",
+   "source": "UI"
+  },
+  {
+   "kind": "aquaswap",
+   "text": "1inch Aqua: sold 0.00078 WETH for 2.11 USDC",
+   "block": 51828987,
+   "tx": "0xdfbc3c2dcd28af25e168ae334bfdf825d3806b1425f949993b48dae17352d9c6",
+   "key": "0xdfbc3c2dcd28af25e168ae334bfdf825d3806b1425f949993b48dae17352d9c619",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "Aqua split: λ 75%, passive 0.5002 WETH frozen for block 51828987",
+   "block": 51828987,
+   "tx": "0xdfbc3c2dcd28af25e168ae334bfdf825d3806b1425f949993b48dae17352d9c6",
+   "key": "0xdfbc3c2dcd28af25e168ae334bfdf825d3806b1425f949993b48dae17352d9c60",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 0.00078 WETH deposited back into Morpho",
+   "block": 51828987,
+   "tx": "0xdfbc3c2dcd28af25e168ae334bfdf825d3806b1425f949993b48dae17352d9c6",
+   "key": "0xdfbc3c2dcd28af25e168ae334bfdf825d3806b1425f949993b48dae17352d9c618",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "aquaswap",
+   "text": "1inch Aqua: sold 0.00296 WETH for 7.96 USDC",
+   "block": 51828985,
+   "tx": "0xc43ad77d3e9f0f57391699274c288eff5e110c6eecfdb3989eabfda30064c424",
+   "key": "0xc43ad77d3e9f0f57391699274c288eff5e110c6eecfdb3989eabfda30064c42419",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "Aqua split: λ 75%, passive 0.4995 WETH frozen for block 51828985",
+   "block": 51828985,
+   "tx": "0xc43ad77d3e9f0f57391699274c288eff5e110c6eecfdb3989eabfda30064c424",
+   "key": "0xc43ad77d3e9f0f57391699274c288eff5e110c6eecfdb3989eabfda30064c4240",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 0.00296 WETH deposited back into Morpho",
+   "block": 51828985,
+   "tx": "0xc43ad77d3e9f0f57391699274c288eff5e110c6eecfdb3989eabfda30064c424",
+   "key": "0xc43ad77d3e9f0f57391699274c288eff5e110c6eecfdb3989eabfda30064c42418",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "aquaswap",
+   "text": "1inch Aqua: bought 0.00371 WETH for 10.00 USDC",
+   "block": 51828983,
+   "tx": "0x389283c20f43ab49be0f376a6774929eebb52940e82de2ac0bea8f10d639007d",
+   "key": "0x389283c20f43ab49be0f376a6774929eebb52940e82de2ac0bea8f10d639007d30",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "split",
+   "text": "Aqua split: λ 75%, passive 0.5004 WETH frozen for block 51828983",
+   "block": 51828983,
+   "tx": "0x389283c20f43ab49be0f376a6774929eebb52940e82de2ac0bea8f10d639007d",
+   "key": "0x389283c20f43ab49be0f376a6774929eebb52940e82de2ac0bea8f10d639007d1",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua fill withdrew 0.00371 WETH from its Morpho vault",
+   "block": 51828983,
+   "tx": "0x389283c20f43ab49be0f376a6774929eebb52940e82de2ac0bea8f10d639007d",
+   "key": "0x389283c20f43ab49be0f376a6774929eebb52940e82de2ac0bea8f10d639007d10",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 10.00000 USDC deposited back into Morpho",
+   "block": 51828983,
+   "tx": "0x389283c20f43ab49be0f376a6774929eebb52940e82de2ac0bea8f10d639007d",
+   "key": "0x389283c20f43ab49be0f376a6774929eebb52940e82de2ac0bea8f10d639007d29",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "aquaswap",
+   "text": "1inch Aqua: sold 0.00086 WETH for 2.30 USDC",
+   "block": 51828976,
+   "tx": "0xac175656ab08304c56c36f282759c4be02eec0b4cc91e1d4d3cf4ec6365e7372",
+   "key": "0xac175656ab08304c56c36f282759c4be02eec0b4cc91e1d4d3cf4ec6365e737219",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "Aqua split: λ 75%, passive 0.5002 WETH frozen for block 51828976",
+   "block": 51828976,
+   "tx": "0xac175656ab08304c56c36f282759c4be02eec0b4cc91e1d4d3cf4ec6365e7372",
+   "key": "0xac175656ab08304c56c36f282759c4be02eec0b4cc91e1d4d3cf4ec6365e73720",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 0.00086 WETH deposited back into Morpho",
+   "block": 51828976,
+   "tx": "0xac175656ab08304c56c36f282759c4be02eec0b4cc91e1d4d3cf4ec6365e7372",
+   "key": "0xac175656ab08304c56c36f282759c4be02eec0b4cc91e1d4d3cf4ec6365e737218",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "aquaswap",
+   "text": "1inch Aqua: sold 0.00324 WETH for 8.70 USDC",
+   "block": 51828974,
+   "tx": "0x43a9e259353ee22856bcd13426ddf9684d7f4e0a7b8271633ed70f54f0d1117d",
+   "key": "0x43a9e259353ee22856bcd13426ddf9684d7f4e0a7b8271633ed70f54f0d1117d19",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "Aqua split: λ 75%, passive 0.4994 WETH frozen for block 51828974",
+   "block": 51828974,
+   "tx": "0x43a9e259353ee22856bcd13426ddf9684d7f4e0a7b8271633ed70f54f0d1117d",
+   "key": "0x43a9e259353ee22856bcd13426ddf9684d7f4e0a7b8271633ed70f54f0d1117d0",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 0.00324 WETH deposited back into Morpho",
+   "block": 51828974,
+   "tx": "0x43a9e259353ee22856bcd13426ddf9684d7f4e0a7b8271633ed70f54f0d1117d",
+   "key": "0x43a9e259353ee22856bcd13426ddf9684d7f4e0a7b8271633ed70f54f0d1117d18",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "aquaswap",
+   "text": "1inch Aqua: bought 0.00371 WETH for 10.00 USDC",
+   "block": 51828972,
+   "tx": "0x6c6644c7ade4538366fc4d7ca23f7a65018d9e4059093e362086d41b52ddc664",
+   "key": "0x6c6644c7ade4538366fc4d7ca23f7a65018d9e4059093e362086d41b52ddc66430",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "split",
+   "text": "Aqua split: λ 75%, passive 0.5003 WETH frozen for block 51828972",
+   "block": 51828972,
+   "tx": "0x6c6644c7ade4538366fc4d7ca23f7a65018d9e4059093e362086d41b52ddc664",
+   "key": "0x6c6644c7ade4538366fc4d7ca23f7a65018d9e4059093e362086d41b52ddc6641",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua fill withdrew 0.00371 WETH from its Morpho vault",
+   "block": 51828972,
+   "tx": "0x6c6644c7ade4538366fc4d7ca23f7a65018d9e4059093e362086d41b52ddc664",
+   "key": "0x6c6644c7ade4538366fc4d7ca23f7a65018d9e4059093e362086d41b52ddc66410",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 10.00000 USDC deposited back into Morpho",
+   "block": 51828972,
+   "tx": "0x6c6644c7ade4538366fc4d7ca23f7a65018d9e4059093e362086d41b52ddc664",
+   "key": "0x6c6644c7ade4538366fc4d7ca23f7a65018d9e4059093e362086d41b52ddc66429",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "sharedswap",
+   "text": "1inch official router (shared liquidity): sold 0.00049 WETH for 1.33 USDC",
+   "block": 51828971,
+   "tx": "0x62a56aa95c34617eb1dfcf4769cb1a3249e51f92bf98dbe465bed83013dd91e5",
+   "key": "0x62a56aa95c34617eb1dfcf4769cb1a3249e51f92bf98dbe465bed83013dd91e516",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 0.00049 WETH deposited back into Morpho",
+   "block": 51828971,
+   "tx": "0x62a56aa95c34617eb1dfcf4769cb1a3249e51f92bf98dbe465bed83013dd91e5",
+   "key": "0x62a56aa95c34617eb1dfcf4769cb1a3249e51f92bf98dbe465bed83013dd91e515",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "aquaswap",
+   "text": "1inch Aqua: sold 0.00190 WETH for 5.12 USDC",
+   "block": 51828970,
+   "tx": "0xb72bc64ef06872cdec7261f50d13cbc358302ad349d41f75824ba515b0059984",
+   "key": "0xb72bc64ef06872cdec7261f50d13cbc358302ad349d41f75824ba515b005998419",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "Aqua split: λ 75%, passive 0.4998 WETH frozen for block 51828970",
+   "block": 51828970,
+   "tx": "0xb72bc64ef06872cdec7261f50d13cbc358302ad349d41f75824ba515b0059984",
+   "key": "0xb72bc64ef06872cdec7261f50d13cbc358302ad349d41f75824ba515b00599840",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 0.00190 WETH deposited back into Morpho",
+   "block": 51828970,
+   "tx": "0xb72bc64ef06872cdec7261f50d13cbc358302ad349d41f75824ba515b0059984",
+   "key": "0xb72bc64ef06872cdec7261f50d13cbc358302ad349d41f75824ba515b005998418",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "v4swap",
+   "text": "Uniswap v4: sold 0.00133 WETH for 3.57 USDC",
+   "block": 51828969,
+   "tx": "0xa2a9396165ec3ae2fe3f111d0459dfe0310e51eabba23c8b33b5d339f9ec9ffc",
+   "key": "0xa2a9396165ec3ae2fe3f111d0459dfe0310e51eabba23c8b33b5d339f9ec9ffc3",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "v4 split: λ 75%, passive 0.4998 WETH + 1,344.13 USDC frozen for block 51828969",
+   "block": 51828969,
+   "tx": "0xa2a9396165ec3ae2fe3f111d0459dfe0310e51eabba23c8b33b5d339f9ec9ffc",
+   "key": "0xa2a9396165ec3ae2fe3f111d0459dfe0310e51eabba23c8b33b5d339f9ec9ffc0",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "aquaswap",
+   "text": "1inch Aqua: sold 0.00293 WETH for 7.90 USDC",
+   "block": 51828967,
+   "tx": "0xdd3c443365e52be0c72f3bd0b321cbf0311a9594e9407f4cdb96ba1fd3292edc",
+   "key": "0xdd3c443365e52be0c72f3bd0b321cbf0311a9594e9407f4cdb96ba1fd3292edc19",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "Aqua split: λ 75%, passive 0.4991 WETH frozen for block 51828967",
+   "block": 51828967,
+   "tx": "0xdd3c443365e52be0c72f3bd0b321cbf0311a9594e9407f4cdb96ba1fd3292edc",
+   "key": "0xdd3c443365e52be0c72f3bd0b321cbf0311a9594e9407f4cdb96ba1fd3292edc0",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 0.00293 WETH deposited back into Morpho",
+   "block": 51828967,
+   "tx": "0xdd3c443365e52be0c72f3bd0b321cbf0311a9594e9407f4cdb96ba1fd3292edc",
+   "key": "0xdd3c443365e52be0c72f3bd0b321cbf0311a9594e9407f4cdb96ba1fd3292edc18",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "aquaswap",
+   "text": "1inch Aqua: bought 0.00371 WETH for 10.00 USDC",
+   "block": 51828965,
+   "tx": "0x1718a497569130201f08193a2ec0511ab677bfad0970eb5f9ac426f223d04acf",
+   "key": "0x1718a497569130201f08193a2ec0511ab677bfad0970eb5f9ac426f223d04acf30",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "split",
+   "text": "Aqua split: λ 75%, passive 0.5000 WETH frozen for block 51828965",
+   "block": 51828965,
+   "tx": "0x1718a497569130201f08193a2ec0511ab677bfad0970eb5f9ac426f223d04acf",
+   "key": "0x1718a497569130201f08193a2ec0511ab677bfad0970eb5f9ac426f223d04acf1",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua fill withdrew 0.00371 WETH from its Morpho vault",
+   "block": 51828965,
+   "tx": "0x1718a497569130201f08193a2ec0511ab677bfad0970eb5f9ac426f223d04acf",
+   "key": "0x1718a497569130201f08193a2ec0511ab677bfad0970eb5f9ac426f223d04acf10",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 10.00000 USDC deposited back into Morpho",
+   "block": 51828965,
+   "tx": "0x1718a497569130201f08193a2ec0511ab677bfad0970eb5f9ac426f223d04acf",
+   "key": "0x1718a497569130201f08193a2ec0511ab677bfad0970eb5f9ac426f223d04acf29",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "aquaswap",
+   "text": "1inch Aqua: sold 0.00077 WETH for 2.08 USDC",
+   "block": 51828962,
+   "tx": "0xcf284699fc1c42ee0e5042fd47fb30e02cd6f16f9b1be7d6da39867dab239a9f",
+   "key": "0xcf284699fc1c42ee0e5042fd47fb30e02cd6f16f9b1be7d6da39867dab239a9f19",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "Aqua split: λ 75%, passive 0.4998 WETH frozen for block 51828962",
+   "block": 51828962,
+   "tx": "0xcf284699fc1c42ee0e5042fd47fb30e02cd6f16f9b1be7d6da39867dab239a9f",
+   "key": "0xcf284699fc1c42ee0e5042fd47fb30e02cd6f16f9b1be7d6da39867dab239a9f0",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 0.00077 WETH deposited back into Morpho",
+   "block": 51828962,
+   "tx": "0xcf284699fc1c42ee0e5042fd47fb30e02cd6f16f9b1be7d6da39867dab239a9f",
+   "key": "0xcf284699fc1c42ee0e5042fd47fb30e02cd6f16f9b1be7d6da39867dab239a9f18",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "aquaswap",
+   "text": "1inch Aqua: sold 0.00292 WETH for 7.86 USDC",
+   "block": 51828958,
+   "tx": "0xf71da399669706853292a5ff477f0022e931920f8ce0b2cb99eafc7c79a068db",
+   "key": "0xf71da399669706853292a5ff477f0022e931920f8ce0b2cb99eafc7c79a068db19",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "Aqua split: λ 75%, passive 0.4991 WETH frozen for block 51828958",
+   "block": 51828958,
+   "tx": "0xf71da399669706853292a5ff477f0022e931920f8ce0b2cb99eafc7c79a068db",
+   "key": "0xf71da399669706853292a5ff477f0022e931920f8ce0b2cb99eafc7c79a068db0",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 0.00292 WETH deposited back into Morpho",
+   "block": 51828958,
+   "tx": "0xf71da399669706853292a5ff477f0022e931920f8ce0b2cb99eafc7c79a068db",
+   "key": "0xf71da399669706853292a5ff477f0022e931920f8ce0b2cb99eafc7c79a068db18",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "aquaswap",
+   "text": "1inch Aqua: bought 0.00371 WETH for 10.00 USDC",
+   "block": 51828954,
+   "tx": "0xcddb9fe4bda8ce2d9d25a5711ccffcc8bb429c817ea83d69e550b2d9a6769db7",
+   "key": "0xcddb9fe4bda8ce2d9d25a5711ccffcc8bb429c817ea83d69e550b2d9a6769db730",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "split",
+   "text": "Aqua split: λ 75%, passive 0.5000 WETH frozen for block 51828954",
+   "block": 51828954,
+   "tx": "0xcddb9fe4bda8ce2d9d25a5711ccffcc8bb429c817ea83d69e550b2d9a6769db7",
+   "key": "0xcddb9fe4bda8ce2d9d25a5711ccffcc8bb429c817ea83d69e550b2d9a6769db71",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua fill withdrew 0.00371 WETH from its Morpho vault",
+   "block": 51828954,
+   "tx": "0xcddb9fe4bda8ce2d9d25a5711ccffcc8bb429c817ea83d69e550b2d9a6769db7",
+   "key": "0xcddb9fe4bda8ce2d9d25a5711ccffcc8bb429c817ea83d69e550b2d9a6769db710",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 10.00000 USDC deposited back into Morpho",
+   "block": 51828954,
+   "tx": "0xcddb9fe4bda8ce2d9d25a5711ccffcc8bb429c817ea83d69e550b2d9a6769db7",
+   "key": "0xcddb9fe4bda8ce2d9d25a5711ccffcc8bb429c817ea83d69e550b2d9a6769db729",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "v4swap",
+   "text": "Uniswap v4: sold 0.00076 WETH for 2.05 USDC",
+   "block": 51828949,
+   "tx": "0xd7c3fac6f7b4d5ffa35a41a04c9e4aa4937ac551bab619d936b1957344a3c040",
+   "key": "0xd7c3fac6f7b4d5ffa35a41a04c9e4aa4937ac551bab619d936b1957344a3c0403",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "v4 split: λ 75%, passive 0.4996 WETH + 1,344.64 USDC frozen for block 51828949",
+   "block": 51828949,
+   "tx": "0xd7c3fac6f7b4d5ffa35a41a04c9e4aa4937ac551bab619d936b1957344a3c040",
+   "key": "0xd7c3fac6f7b4d5ffa35a41a04c9e4aa4937ac551bab619d936b1957344a3c0400",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "v4swap",
+   "text": "Uniswap v4: sold 0.00288 WETH for 7.74 USDC",
+   "block": 51828947,
+   "tx": "0x384ff3d19e71c14a2cf03a962e57fd1d7b0bab6de27179ec64475ec0f6fc122b",
+   "key": "0x384ff3d19e71c14a2cf03a962e57fd1d7b0bab6de27179ec64475ec0f6fc122b3",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "v4 split: λ 75%, passive 0.4989 WETH + 1,346.57 USDC frozen for block 51828947",
+   "block": 51828947,
+   "tx": "0x384ff3d19e71c14a2cf03a962e57fd1d7b0bab6de27179ec64475ec0f6fc122b",
+   "key": "0x384ff3d19e71c14a2cf03a962e57fd1d7b0bab6de27179ec64475ec0f6fc122b0",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "v4swap",
+   "text": "Uniswap v4: bought 0.00371 WETH for 10.00 USDC",
+   "block": 51828945,
+   "tx": "0x707a316e805665616ac72e69c6f71a72437c09fc7a6caf9456ce13d68dea450f",
+   "key": "0x707a316e805665616ac72e69c6f71a72437c09fc7a6caf9456ce13d68dea450f3",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "split",
+   "text": "v4 split: λ 75%, passive 0.4998 WETH + 1,344.07 USDC frozen for block 51828945",
+   "block": 51828945,
+   "tx": "0x707a316e805665616ac72e69c6f71a72437c09fc7a6caf9456ce13d68dea450f",
+   "key": "0x707a316e805665616ac72e69c6f71a72437c09fc7a6caf9456ce13d68dea450f0",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "lambda",
+   "text": "keeper set λ = 75% for the Uniswap v4 pool",
+   "block": 51828942,
+   "tx": "0x8fd98b151444b9669513d2d12f9a56947c72bbbc0a85bf2ff877422f101f142d",
+   "key": "0x8fd98b151444b9669513d2d12f9a56947c72bbbc0a85bf2ff877422f101f142d0",
+   "source": "keeper"
+  },
+  {
+   "kind": "lambda",
+   "text": "keeper set λ = 75% for the 1inch Aqua position",
+   "block": 51828941,
+   "tx": "0xb604a59acfad5568e218173993738578fc1d568194eb6fccd1f4da50977d30e6",
+   "key": "0xb604a59acfad5568e218173993738578fc1d568194eb6fccd1f4da50977d30e60",
+   "source": "keeper"
+  },
+  {
+   "kind": "v4swap",
+   "text": "Uniswap v4: sold 0.00086 WETH for 2.31 USDC",
+   "block": 51828883,
+   "tx": "0x230cbab2bcb53e7cbb5e5da61bc5cb7485a0939468dcfb7462636249309fe074",
+   "key": "0x230cbab2bcb53e7cbb5e5da61bc5cb7485a0939468dcfb7462636249309fe0743",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "v4 split: λ 80%, passive 0.3997 WETH + 1,075.72 USDC frozen for block 51828883",
+   "block": 51828883,
+   "tx": "0x230cbab2bcb53e7cbb5e5da61bc5cb7485a0939468dcfb7462636249309fe074",
+   "key": "0x230cbab2bcb53e7cbb5e5da61bc5cb7485a0939468dcfb7462636249309fe0740",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "sharedswap",
+   "text": "1inch official router (shared liquidity): sold 0.00276 WETH for 7.44 USDC",
+   "block": 51828881,
+   "tx": "0x81cef3d7a24da022833ae428a4cc636c7b82c7d99d5680d6981713ca7a3dae9e",
+   "key": "0x81cef3d7a24da022833ae428a4cc636c7b82c7d99d5680d6981713ca7a3dae9e16",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 0.00276 WETH deposited back into Morpho",
+   "block": 51828881,
+   "tx": "0x81cef3d7a24da022833ae428a4cc636c7b82c7d99d5680d6981713ca7a3dae9e",
+   "key": "0x81cef3d7a24da022833ae428a4cc636c7b82c7d99d5680d6981713ca7a3dae9e15",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "aquaswap",
+   "text": "1inch Aqua: sold 0.00107 WETH for 2.87 USDC",
+   "block": 51828880,
+   "tx": "0x1bf66afa299073353da219ebe75720bfc0d6a1f48edb17ebb58b2b3d9d22387d",
+   "key": "0x1bf66afa299073353da219ebe75720bfc0d6a1f48edb17ebb58b2b3d9d22387d19",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "Aqua split: λ 80%, passive 0.3998 WETH frozen for block 51828880",
+   "block": 51828880,
+   "tx": "0x1bf66afa299073353da219ebe75720bfc0d6a1f48edb17ebb58b2b3d9d22387d",
+   "key": "0x1bf66afa299073353da219ebe75720bfc0d6a1f48edb17ebb58b2b3d9d22387d0",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 0.00107 WETH deposited back into Morpho",
+   "block": 51828880,
+   "tx": "0x1bf66afa299073353da219ebe75720bfc0d6a1f48edb17ebb58b2b3d9d22387d",
+   "key": "0x1bf66afa299073353da219ebe75720bfc0d6a1f48edb17ebb58b2b3d9d22387d18",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "v4swap",
+   "text": "Uniswap v4: sold 0.00397 WETH for 10.70 USDC",
+   "block": 51828879,
+   "tx": "0x315ef42cfb2faa18c1ffb40f0fb2ffdab9998398e2461de2a560e5c4759bc77e",
+   "key": "0x315ef42cfb2faa18c1ffb40f0fb2ffdab9998398e2461de2a560e5c4759bc77e3",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "split",
+   "text": "v4 split: λ 80%, passive 0.3989 WETH + 1,077.86 USDC frozen for block 51828879",
+   "block": 51828879,
+   "tx": "0x315ef42cfb2faa18c1ffb40f0fb2ffdab9998398e2461de2a560e5c4759bc77e",
+   "key": "0x315ef42cfb2faa18c1ffb40f0fb2ffdab9998398e2461de2a560e5c4759bc77e0",
+   "source": "arbitrageur (simulated)"
+  },
+  {
+   "kind": "aquaswap",
+   "text": "1inch Aqua: bought 0.00186 WETH for 5.00 USDC",
+   "block": 51828877,
+   "tx": "0xc3ecb24a270eccb898daafd1b6325a71e3bf696073f893d1f50621c26c38fd20",
+   "key": "0xc3ecb24a270eccb898daafd1b6325a71e3bf696073f893d1f50621c26c38fd2030",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "split",
+   "text": "Aqua split: λ 80%, passive 0.4002 WETH frozen for block 51828877",
+   "block": 51828877,
+   "tx": "0xc3ecb24a270eccb898daafd1b6325a71e3bf696073f893d1f50621c26c38fd20",
+   "key": "0xc3ecb24a270eccb898daafd1b6325a71e3bf696073f893d1f50621c26c38fd201",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua fill withdrew 0.00186 WETH from its Morpho vault",
+   "block": 51828877,
+   "tx": "0xc3ecb24a270eccb898daafd1b6325a71e3bf696073f893d1f50621c26c38fd20",
+   "key": "0xc3ecb24a270eccb898daafd1b6325a71e3bf696073f893d1f50621c26c38fd2010",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "vault",
+   "text": "Aqua proceeds 5.00000 USDC deposited back into Morpho",
+   "block": 51828877,
+   "tx": "0xc3ecb24a270eccb898daafd1b6325a71e3bf696073f893d1f50621c26c38fd20",
+   "key": "0xc3ecb24a270eccb898daafd1b6325a71e3bf696073f893d1f50621c26c38fd2029",
+   "source": "terminal / API"
+  },
+  {
+   "kind": "lambda",
+   "text": "keeper set λ = 80% for the 1inch Aqua position",
+   "block": 51828876,
+   "tx": "0x4562a6a3df941f976b565c291136d197a9005853578015ecd6b1eb32e6dab34b",
+   "key": "0x4562a6a3df941f976b565c291136d197a9005853578015ecd6b1eb32e6dab34b0",
+   "source": "keeper"
+  },
+  {
+   "kind": "rebalance",
+   "text": "shipped Aqua strategy 0xa3be5bdb… (balanced at the live price)",
+   "block": 51828875,
+   "tx": "0x98eb69de2e471a7f41212082ed28e59ba37da9b58359410c004dc277dc02f049",
+   "key": "0x98eb69de2e471a7f41212082ed28e59ba37da9b58359410c004dc277dc02f0490",
+   "source": "keeper"
+  },
+  {
+   "kind": "rebalance",
+   "text": "rebalance: retired Aqua strategy 0x73655225…",
+   "block": 51828871,
+   "tx": "0xb2d8329551a06e026f2da03cf8d1c3ae014659494678a4686cc4c019110d0e44",
+   "key": "0xb2d8329551a06e026f2da03cf8d1c3ae014659494678a4686cc4c019110d0e440",
+   "source": "keeper"
+  }
+ ],
+ "counts": {
+  "v4Swaps": 9,
+  "aquaSwaps": 17,
+  "sharedSwaps": 6,
+  "rebalances": 3,
+  "splits": 26,
+  "parks": 2,
+  "vaultMoves": 33,
+  "lambdaUpdates": 9
+ }
+}

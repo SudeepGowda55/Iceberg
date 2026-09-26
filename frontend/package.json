@@ -10,6 +10,7 @@
     "watch": "tsx scripts/watch.ts",
     "swap": "tsx scripts/swap.ts",
     "rebalance": "tsx scripts/rebalance.ts",
+    "snapshot": "tsx scripts/snapshot.ts",
     "demo": "tsx scripts/demo.ts",
     "e2e": "tsx scripts/e2e-check.ts",
     "typecheck": "tsc --noEmit"

@@ -77,10 +77,11 @@ export default function Page() {
 
   return <>
     <header><div className="wrap hdr">
-      <div className="brand">Iceberg<small>{err ? <span className="bad">{err}</span> : st ? (st.mirror ? "local fork of Base mainnet · real Aqua, v4 PoolManager, Morpho" : st.network === "mainnet" ? "Base mainnet" : `${st.network}: Base fork rehearsal with the real wallet`) : "loading…"}</small></div>
+      <div className="brand">Iceberg<small>{err ? <span className="bad">{err}</span> : st ? (st.snapshot ? `recorded snapshot of a local Base mainnet fork · ${new Date(st.snapshot.takenAt).toUTCString().slice(5, 22)} UTC` : st.mirror ? "local fork of Base mainnet · real Aqua, v4 PoolManager, Morpho" : st.network === "mainnet" ? "Base mainnet" : `${st.network}: Base fork rehearsal with the real wallet`) : "loading…"}</small></div>
       <nav>{["overview", "venues", "keeper", "replay", "trade", "activity", "api", "limits"].map(s => <a key={s} href={`#${s}`}>{s[0].toUpperCase() + s.slice(1)}</a>)}</nav>
-      <div className="hdr-right">{st && <><span className="pill">block {st.block}</span><span className="pill">ETH ${fmt(st.ethUsd)}</span><span className="pill">keeper {st.keeperUpdated ? `${Math.max(0, Math.floor(Date.now() / 1000) - st.keeperUpdated)}s ago` : "–"}</span></>}</div>
+      <div className="hdr-right">{st && <><span className="pill">block {st.block}</span><span className="pill">ETH ${fmt(st.ethUsd)}</span><span className="pill">keeper {st.snapshot ? "snapshot" : st.keeperUpdated ? `${Math.max(0, Math.floor(Date.now() / 1000) - st.keeperUpdated)}s ago` : "–"}</span></>}</div>
     </div></header>
+    {st?.snapshot && <div className="wrap"><div className="panel" style={{ marginTop: 12 }}>Read-only snapshot of the live demo stack (a local fork of Base mainnet with the real Aqua, Uniswap v4 PoolManager and Morpho), taken at fork block {st.snapshot.block}. Trading and rebalancing are off here: clone the repo and run <code>./scripts/start_local.sh</code> to trade live.</div></div>}
 
     <main className="wrap">
       <section id="overview" className="hero">
@@ -127,7 +128,7 @@ export default function Page() {
             <p className="why">A partially active pool lags the market, so its mix drifts. When the Aqua position&apos;s ETH weight at the live price leaves 50% ± {fmt(rb.bandPct, 1)}%, the keeper retires it, rebalances the Morpho holdings through Uniswap, and re-ships it balanced. That resets the stale price without paying arbitrageurs.</p>
             <div className="kv"><span className="k">ETH weight now</span><span className="v">{rb.weightEthPct != null ? `${fmt(rb.weightEthPct, 2)}%` : "–"}</span></div>
             <div className="kv"><span className="k">rebalances so far</span><span className="v">{rb.count} · strategy salt {rb.salt}</span></div>
-            <div className="btnrow"><button id="rebalance" onClick={rebalance}>Rebalance now</button></div>
+            <div className="btnrow"><button id="rebalance" disabled={!!st?.snapshot} onClick={rebalance}>Rebalance now</button></div>
             <div className="result" id="rebalance-result">{rbMsg}</div>
           </div>}
         </div>
@@ -176,12 +177,12 @@ export default function Page() {
         <div className="panel">
           <div className="row"><span className="t2">size $</span><input type="number" value={usd} min={1} max={2000} onChange={e => setUsd(Number(e.target.value) || 1)} style={{ width: 90 }} /></div>
           <div className="btnrow">
-            <button id="buy-v4" className="primary" onClick={() => trade("v4", "buy")}>Buy ETH on Uniswap v4</button>
-            <button id="sell-v4" onClick={() => trade("v4", "sell")}>Sell ETH on Uniswap v4</button>
-            <button id="buy-aqua" className="primary" onClick={() => trade("aqua", "buy")}>Buy ETH on 1inch Aqua</button>
-            <button id="sell-aqua" onClick={() => trade("aqua", "sell")}>Sell ETH on 1inch Aqua</button>
-            {sh && <><button id="buy-official" onClick={() => trade("official", "buy")}>Buy on 1inch official router</button>
-            <button id="sell-official" onClick={() => trade("official", "sell")}>Sell on 1inch official router</button></>}
+            <button id="buy-v4" disabled={!!st?.snapshot} className="primary" onClick={() => trade("v4", "buy")}>Buy ETH on Uniswap v4</button>
+            <button id="sell-v4" disabled={!!st?.snapshot} onClick={() => trade("v4", "sell")}>Sell ETH on Uniswap v4</button>
+            <button id="buy-aqua" disabled={!!st?.snapshot} className="primary" onClick={() => trade("aqua", "buy")}>Buy ETH on 1inch Aqua</button>
+            <button id="sell-aqua" disabled={!!st?.snapshot} onClick={() => trade("aqua", "sell")}>Sell ETH on 1inch Aqua</button>
+            {sh && <><button id="buy-official" disabled={!!st?.snapshot} onClick={() => trade("official", "buy")}>Buy on 1inch official router</button>
+            <button id="sell-official" disabled={!!st?.snapshot} onClick={() => trade("official", "sell")}>Sell on 1inch official router</button></>}
           </div>
           <div className="result" id="trade-result">{tradeMsg}</div>
         </div>

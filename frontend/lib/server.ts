@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { ethers } from "ethers";
 import { ABI, Iceberg, Venue, WAD, fmt } from "./iceberg";
+import { readSnapshot, requireLive, snapshotMode } from "./snapshot";
 
 export const ROOT = process.env.WI_ROOT || path.resolve(process.cwd(), process.cwd().endsWith("frontend") ? ".." : ".");
 export const DEPLOYMENTS = path.join(ROOT, "deployments");
@@ -101,6 +102,7 @@ export function feeAwareLambda(prices: number[], feePips: number, floor = Number
 const u6 = (x: bigint) => Number(x) / 1e6, u18 = (x: bigint) => Number(x) / 1e18;
 
 export async function apiStatus(net: string) {
+  if (snapshotMode(net)) return readSnapshot("status");
   const b = icebergFor(net), d = b.dep;
   const m = await b.market();
   const [aqua, hook, shared] = await Promise.all([b.aquaState(m.block), b.hookState(), b.sharedState()]);
@@ -126,6 +128,7 @@ export async function apiStatus(net: string) {
 
 const VENUE_NAME: Record<Venue, string> = { v4: "Uniswap v4 hook", aqua: "1inch Aqua", official: "1inch official router (shared liquidity)" };
 export async function apiQuote(net: string, venue: Venue, side: "buy" | "sell", usd: number) {
+  requireLive(net);
   const b = icebergFor(net), m = await b.market();
   const amountIn = side === "buy" ? BigInt(Math.round(usd * 1e6)) : BigInt(Math.round(usd / m.ethUsd * 1e18));
   const taker = b.dep.keys?.cli ? new ethers.Wallet(b.dep.keys.cli).address : b.dep.maker;
@@ -137,6 +140,7 @@ export async function apiQuote(net: string, venue: Venue, side: "buy" | "sell", 
 }
 
 export async function apiSwap(net: string, venue: Venue, side: "buy" | "sell", usd: number, who: "cli" | "ui" = "cli") {
+  requireLive(net);
   const b = icebergFor(net), pk = b.dep.keys?.[who];
   if (!pk) throw new Error("swaps via the API are only enabled on the local fork");
   const q = await apiQuote(net, venue, side, usd);
@@ -152,13 +156,14 @@ export async function apiSwap(net: string, venue: Venue, side: "buy" | "sell", u
 
 const cached: Record<string, Iceberg> = {};
 export async function apiActivity(net: string) {
+  if (snapshotMode(net)) return readSnapshot("activity");
   const b = (cached[net] ??= icebergFor(net));
   return b.activity(b.dep.deployBlock || 0, labels(b.dep));
 }
 
 export function apiReplay() {
   const p = path.join(ROOT, "research", "replay_2026-09-21_1440min.json");
-  if (!fs.existsSync(p)) return null;
+  if (!fs.existsSync(p)) { try { return readSnapshot("replay"); } catch { return null; } }
   const r = JSON.parse(fs.readFileSync(p, "utf8")), venues = [];
   for (let i = 0; r[`venue${i}`]; i++) venues.push(r[`venue${i}`]);
   return { minutes: r.minutes, startPrice: Number(r.startPrice8) / 1e8, endPrice: Number(r.endPrice8) / 1e8, venues };
@@ -195,6 +200,7 @@ const V3_ROUTER = "0x2626664c2603336E57B271c5C0b26F421741e481"; // Uniswap v3 Sw
  *  drifts outside the band, retire the strategy, rebalance the maker's Morpho holdings to 50/50 through Uniswap, and
  *  re-ship with salt + 1 balanced at the live price. This resets a stale curve price without paying arbitrageurs. */
 export async function rebalanceAqua(net: string, opts: { force?: boolean; band?: number; pk?: string; lambdaWad?: bigint } = {}) {
+  requireLive(net);
   return withMakerLock(() => rebalanceAquaUnlocked(net, opts));
 }
 async function rebalanceAquaUnlocked(net: string, opts: { force?: boolean; band?: number; pk?: string; lambdaWad?: bigint }) {

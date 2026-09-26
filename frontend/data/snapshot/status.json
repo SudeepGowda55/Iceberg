@@ -1,0 +1,162 @@
+{
+ "network": "local",
+ "block": 51829208,
+ "ethUsd": 2683.38555233,
+ "oracleAgeSeconds": 0,
+ "liveBaseChainlink": {
+  "ethUsd": 2683.38555233,
+  "ageSeconds": 1177
+ },
+ "mirror": true,
+ "uniswapV4": {
+  "hook": "0x63F7a4B20aC0Bd7e2b69708afdF5C4FdaAD22a88",
+  "poolId": "0x8c407cd491c3bde9bef5e98a1a4e67bbd50c2319986a2d02dc297c8f2ea82226",
+  "feeBps": 5,
+  "lambdaPct": 80,
+  "maxLambdaPct": 80,
+  "totalValueUsd": 10741.130044332676,
+  "activeValueUsd": 8592.904035066143,
+  "parkedInMorphoUsd": 2126.742692143273,
+  "reserves": {
+   "weth": 2.0009040637751707,
+   "usdc": 5371.932988
+  },
+  "active": {
+   "weth": 1.6007232510201368,
+   "usdc": 4297.54639
+  },
+  "inPool": {
+   "weth": 1.6049028643871104,
+   "usdc": 4307.814193
+  },
+  "parked": {
+   "weth": 0.39600119938806044,
+   "usdc": 1064.118795
+  },
+  "lastSplitBlock": 51829031
+ },
+ "oneInchAqua": {
+  "router": "0xc38E0d4ABA8Bd539d9D5Ee31Bab944C5973AC064",
+  "orderHash": "0x79e66cd5f0d2cfef38f07b0aeb3c4a867ee85d29cd2d1e7c3c3ff34e9e51aa3b",
+  "feeBps": 5,
+  "lambdaPct": 80,
+  "totalValueUsd": 10826.334882642277,
+  "activeValueUsd": 8661.067905313823,
+  "inMorphoUsd": 10826.370842213666,
+  "balances": {
+   "weth": 2.017371447774921,
+   "usdc": 5412.949486
+  },
+  "active": {
+   "weth": 1.6138971582199368,
+   "usdc": 4330.359588
+  },
+  "inMorpho": {
+   "weth": 2.017375732128088,
+   "usdc": 5412.973949
+  },
+  "lastSplitBlock": 0
+ },
+ "sharedLiquidity": {
+  "router": "0x111111338c5091E8440b67B168bAe16a668AC0De",
+  "orderHash": "0xbe2031e6ad2428fe8ccbc000617a1f5cb583b77d573b1bd9290349ae4e0b82d2",
+  "valueUsd": 3222.354499546631,
+  "balances": {
+   "weth": 0.600123858887271,
+   "usdc": 1611.990807
+  },
+  "note": "same Morpho vault shares as the Iceberg position; Aqua lets one balance back both strategies"
+ },
+ "rebalance": {
+  "lastAt": 1790448872,
+  "count": 3,
+  "salt": 4,
+  "weightEthPct": 50.002013195818364,
+  "bandPct": 2
+ },
+ "keeper": {
+  "t": 1790453356,
+  "tick": 297,
+  "actions": [
+   {
+    "what": "mirrored live Base Chainlink ETH/USD $2,683.39 into the fork's MirrorFeed"
+   }
+  ],
+  "arbs": [],
+  "live": {
+   "ethUsd": 2683.38555233,
+   "ageSeconds": 1175
+  },
+  "policy": {
+   "lambda": 1,
+   "savedPct": 0,
+   "plainLossBps": 0.008777663603326264,
+   "bestLossBps": 0.008777663603326264,
+   "volAnnualPct": 15.945027793202426,
+   "minutes": 360,
+   "feeBps": 5,
+   "floor": 0.4,
+   "table": [
+    {
+     "lambda": 1,
+     "lossBps": 0.009
+    },
+    {
+     "lambda": 0.95,
+     "lossBps": 0.009
+    },
+    {
+     "lambda": 0.9,
+     "lossBps": 0.009
+    },
+    {
+     "lambda": 0.85,
+     "lossBps": 0.009
+    },
+    {
+     "lambda": 0.8,
+     "lossBps": 0.009
+    },
+    {
+     "lambda": 0.75,
+     "lossBps": 0.009
+    },
+    {
+     "lambda": 0.7,
+     "lossBps": 0.009
+    },
+    {
+     "lambda": 0.65,
+     "lossBps": 0.009
+    },
+    {
+     "lambda": 0.6,
+     "lossBps": 0.009
+    },
+    {
+     "lambda": 0.55,
+     "lossBps": 0.009
+    },
+    {
+     "lambda": 0.5,
+     "lossBps": 0.009
+    },
+    {
+     "lambda": 0.45,
+     "lossBps": 0.01
+    },
+    {
+     "lambda": 0.4,
+     "lossBps": 0.01
+    }
+   ]
+  },
+  "lambda": 1,
+  "weightEthPct": 50.002013195818364
+ },
+ "keeperUpdated": 1790453356,
+ "snapshot": {
+  "takenAt": "2026-09-26T20:09:18.540Z",
+  "block": 51829208
+ }
+}
