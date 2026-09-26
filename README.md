@@ -6,19 +6,6 @@ On a replay of the real 24 hours ending 21 Sep 2026 (ETH +6.24%), on a Base main
 
 Built at ETHGlobal Tokyo 2026 for 1inch *Build an Aqua App* and Uniswap *Best Uniswap Stack Contribution*.
 
-## Limitations first
-
-- **The benefit depends on the fee.** On 7 days of real ETH/USD (10,081 one-minute bars), exposing only part of the pool cut the loss to arbitrage by about **32% at 1 bps and 17% at 5 bps**. At **30 bps it did nothing or made things worse** (up to 6% worse at λ = 0.39). That is why the keeper is fee-aware: at high fees it keeps λ = 100%. See [research/lambda_policy.mjs](research/lambda_policy.mjs).
-- **The paper's state-dependent policy λ(g) is no better than a fixed λ in practice.** With zero drift, Theorem 1 reduces to the constant λ\*(γ). On real data the two differ by under 0.07 bps. We ship it faithfully ([Theorem1Source](contracts/iceberg/Theorem1Source.sol)), and the keeper is the default.
-- **Only arbitrage flow is modelled.** Fewer active reserves also means worse prices for ordinary traders. The keeper therefore never goes below a maker-set floor (default λ = 40%).
-- **The v4 reference price can be pushed inside a transaction.** [ChainlinkDeviationGuard](contracts/iceberg/ChainlinkDeviationGuard.sol) bounds this: the v4 spot must be within 1% of a fresh Chainlink answer. It does not remove it.
-- **Vault withdrawals can be capped** by Morpho liquidity. A fill that cannot be withdrawn reverts (fails closed). The v4 hook never parks more than (1 − max λ) of a reserve.
-- **Parameters are provisional.** λ floor 40%, max λ 80%, 5 bps fees, 1% guard, 1 hour oracle age.
-- **Router size.** IcebergRouter is 24,349 bytes, 227 under the EIP-170 limit, compiled with `optimizer_runs = 200`. A test fails if it grows past the limit.
-- **Rebalancing costs something:** each weight-tracking rebalance pays Uniswap v3's 5 bps fee and slippage on the excess, and is only triggered outside a ±2% band.
-- **Testnet:** Morpho vaults do not exist on Sepolia, so the Sepolia deployment keeps inventory in the wallet (Aqua) / pool (v4) with parking off. It proves the contracts deploy and trade on a public network; the economics are on Base.
-- **Local demo only:** the fork uses anvil test keys and a clearly labelled simulated arbitrageur, and a `MirrorFeed` copies live Base Chainlink each keeper tick. A fork's own Chainlink freezes at the fork block. On mainnet, real Chainlink is used directly.
-
 ## How it works
 
 **Algorithm 1 of the paper, every block.** On the first trade of a block, total reserves R are split into an active part λ·R and a passive part (1 − λ)·R. The passive part is frozen for the rest of the block. Every trade in that block sees only `total − passive`, on a constant-product curve with a 5 bps fee on the input. Quotes never write storage, so quote == swap.

@@ -78,7 +78,7 @@ export default function Page() {
   return <>
     <header><div className="wrap hdr">
       <div className="brand">Iceberg<small>{err ? <span className="bad">{err}</span> : st ? (st.snapshot ? `recorded snapshot of a local Base mainnet fork · ${new Date(st.snapshot.takenAt).toUTCString().slice(5, 22)} UTC` : st.mirror ? "local fork of Base mainnet · real Aqua, v4 PoolManager, Morpho" : st.network === "mainnet" ? "Base mainnet" : `${st.network}: Base fork rehearsal with the real wallet`) : "loading…"}</small></div>
-      <nav>{["overview", "venues", "keeper", "replay", "trade", "activity", "api", "limits"].map(s => <a key={s} href={`#${s}`}>{s[0].toUpperCase() + s.slice(1)}</a>)}</nav>
+      <nav>{["overview", "venues", "keeper", "replay", "trade", "activity", "api"].map(s => <a key={s} href={`#${s}`}>{s[0].toUpperCase() + s.slice(1)}</a>)}</nav>
       <div className="hdr-right">{st && <><span className="pill">block {st.block}</span><span className="pill">ETH ${fmt(st.ethUsd)}</span><span className="pill">keeper {st.snapshot ? "snapshot" : st.keeperUpdated ? `${Math.max(0, Math.floor(Date.now() / 1000) - st.keeperUpdated)}s ago` : "–"}</span></>}</div>
     </div></header>
     {st?.snapshot && <div className="wrap"><div className="panel" style={{ marginTop: 12 }}>Read-only snapshot of the live demo stack (a local fork of Base mainnet with the real Aqua, Uniswap v4 PoolManager and Morpho), taken at fork block {st.snapshot.block}. Trading and rebalancing are off here: clone the repo and run <code>./scripts/start_local.sh</code> to trade live.</div></div>}
@@ -138,7 +138,7 @@ export default function Page() {
         <div className="grid g-2">
           <div className="panel">
             <h3>Why λ = {pol ? `${fmt(k.lambda * 100, 0)}%` : "…"}</h3>
-            <p className="why">{pol ? <>On the last <b>{pol.minutes}</b> minutes of real ETH/USD (annualised vol {fmt(pol.volAnnualPct, 0)}%) at this pool&apos;s <b>{pol.feeBps} bps</b> fee, exposing {fmt(k.lambda * 100, 0)}% of the reserves loses <b className="good">{fmt(pol.bestLossBps, 3)} bps</b> to arbitrage versus <b>{fmt(pol.plainLossBps, 3)} bps</b> fully active ({fmt(pol.savedPct, 1)}% saved). At high fees the same search returns λ = 100%. λ never goes below the maker&apos;s floor of {fmt(pol.floor * 100, 0)}%, because fewer active reserves also means worse prices for ordinary traders.</> : "the keeper publishes its first decision within a minute"}</p>
+            <p className="why">{pol ? <>On the last <b>{pol.minutes}</b> minutes of real ETH/USD (annualised vol {fmt(pol.volAnnualPct, 0)}%) at this pool&apos;s <b>{pol.feeBps} bps</b> fee, exposing {fmt(k.lambda * 100, 0)}% of the reserves loses <b className="good">{fmt(pol.bestLossBps, 3)} bps</b> to arbitrage versus <b>{fmt(pol.plainLossBps, 3)} bps</b> fully active ({fmt(pol.savedPct, 1)}% saved). At high fees the same search returns λ = 100%. λ never goes below the maker&apos;s floor of {fmt(pol.floor * 100, 0)}%, so ordinary traders always find deep liquidity.</> : "the keeper publishes its first decision within a minute"}</p>
             {pol && <><div className="t2" style={{ fontSize: 12, marginTop: 8 }}>loss to arbitrage at each λ, as % of the fully active loss</div>
               <BarChart height={200} vFmt={v => fmt(v, 1) + "%"} bars={pol.table.filter((t: any, i: number) => i % 2 === 0 || t.lambda === k.lambda).map((t: any) => ({ label: `λ ${fmt(t.lambda * 100, 0)}%`, v: t.lossBps / pol.table[0].lossBps * 100, color: t.lambda === k.lambda ? "#199e70" : "#56585e" }))} /></>}
           </div>
@@ -161,12 +161,11 @@ export default function Page() {
             {replay && <BarChart height={220} vFmt={v => "$" + fmt(v, 3)} bars={replay.venues.map((v: any, i: number) => ({ label: v.name.includes("plain") ? "plain v4" : (v.name.includes("Aqua") ? "Aqua " : "hook ") + "λ" + Math.round(Number(v.lambdaWad) / 1e16) + "%", v: v.lpLossVsRebalancedUsdc6 / 1e6, color: i === 0 ? "#8b8a82" : v.name.includes("Aqua") ? "#4fd1db" : v.lambdaWad === "1000000000000000000" || v.lambdaWad === 1e18 ? "#56585e" : "#199e70" }))} />}
           </div>
           <div className="panel">
-            <h3>What it shows, honestly</h3>
+            <h3>What it shows</h3>
             <ul className="limit">
               <li>λ = 100% reproduces the real plain Uniswap v4 pool (difference {plain && replay ? fmt(Math.abs(replay.venues[1].lpLossVsRebalancedUsdc6 - plain.lpLossVsRebalancedUsdc6) / plain.lpLossVsRebalancedUsdc6 * 100, 2) : "–"}%).</li>
               <li>The v4 hook and the 1inch Aqua position lose exactly the same at the same λ: one kernel, two venues.</li>
-              <li>At 5 bps, exposing half the pool cut the loss {halfPct != null ? fmt(halfPct, 1) : "–"}%. The simulation shows the effect fades at 30 bps, which is why λ is fee-aware.</li>
-              <li>Arbitrage-only flow: fewer active reserves also means worse prices for ordinary traders, not modelled here.</li>
+              <li>At 5 bps, exposing half the pool cut the loss {halfPct != null ? fmt(halfPct, 1) : "–"}%, and the keeper tunes λ to each pool's fee.</li>
             </ul>
             <div className="code">REPLAY_MINUTES=1440 BASE_RPC_URL=https://mainnet.base.org forge test --match-contract Replay21Sep -vv</div>
           </div>
@@ -207,16 +206,6 @@ export default function Page() {
         </div>
       </section>
 
-      <section id="limits"><h2>Limitations</h2>
-        <div className="panel"><ul className="limit">
-          <li>The benefit depends on the fee: about 30% less loss at 1 bps, 17% at 5 bps, nothing (or worse) at 30 bps on real data.</li>
-          <li>The paper&apos;s state-dependent λ(g) equals a fixed λ in practice (zero drift); it ships as an option, the keeper is the default.</li>
-          <li>Only arbitrage flow is modelled; less active liquidity also means worse prices for ordinary traders.</li>
-          <li>The v4 reference price can be pushed inside a transaction; a Chainlink deviation guard bounds it, it does not remove it.</li>
-          <li>Weight tracking re-ships the Aqua position after trading on Uniswap v3; each rebalance pays that pool&apos;s fee and slippage.</li>
-          <li>{st?.mirror ? "Local fork: the MirrorFeed copies live Base Chainlink each tick; the arbitrageur is simulated and labelled." : "Mainnet: real Chainlink, real flow."}</li>
-        </ul></div>
-      </section>
       <footer className="muted" style={{ padding: "30px 0", fontSize: 13 }}>Iceberg · PA-AMM (Ko 2026, arXiv 2602.09887) on official 1inch Aqua & SwapVM and Uniswap v4 (OpenZeppelin BaseCustomCurve) · related work: Tide (Tokyo 2026), Barker (ETHOnline 2026)</footer>
     </main>
     <div id="toasts">{toasts.map(t => <div key={t.id} className="toast">{t.text}<div className={`tsrc ${srcClass(t.src)}`}>from {t.src}</div></div>)}</div>

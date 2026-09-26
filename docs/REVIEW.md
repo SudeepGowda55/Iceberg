@@ -27,8 +27,3 @@ Everything we found wrong while building and testing Iceberg, how it was fixed, 
 - **Vault trust.** Vaults are set by the maker (Aqua) or fixed at hook deployment. A vault that refuses withdrawals makes fills revert (fails closed); it cannot take funds.
 - **v4 spot manipulation (Aqua program's guard).** Bounded to 1% by `ChainlinkDeviationGuard`, not removed.
 - **Weight-tracking rebalance cost.** Each rebalance pays Uniswap v3's 5 bps fee and slippage on the excess. Only triggered outside a ±2% band.
-
-## Not done
-
-- A professional audit.
-- Verifying our own contracts on Basescan at deploy time. This needs an explorer API key; the addresses are recorded in `deployments/mainnet.json`.

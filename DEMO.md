@@ -21,7 +21,6 @@ Before going on stage: run `./scripts/start_local.sh` (or open the mainnet deplo
 | 8c | **UI** | Weight tracking card: click **Rebalance now** | "A partially active pool lags the market, so its mix drifts. When it leaves 50% ± 2%, the keeper retires the strategy, rebalances through Uniswap, and re-ships it balanced at the live price, without paying arbitrageurs to do it." (the feed shows retire → Uniswap → re-ship) |
 | 9 | **UI** | Replay panel | "The evidence: the real 24 hours of 21 September, replayed minute by minute on a Base fork against a real plain Uniswap v4 pool. Half active cut the LPs' loss 17.6%, λ 39% cut it 19.3%, and the Aqua position lost exactly the same as the hook." |
 | 10 | **Terminal** | `(cd frontend && npx tsx scripts/demo.ts) \| tail -8` (steps 6–10) | "A million-dollar order still can't reach the passive side, and the counts on-chain: splits, swaps, vault moves, λ updates." |
-| 11 | **UI** | Limitations section | "Honest limits: the gain depends on the fee, the paper's smart λ equals a fixed one in practice, and fewer active reserves means worse prices for ordinary traders, which is why λ has a floor." |
 
 **If something fails live:** the scripted terminal demo prints the same steps with real transactions. The replay numbers come from a committed JSON (`research/replay_2026-09-21_1440min.json`), so the evidence panel never depends on the network.
 
