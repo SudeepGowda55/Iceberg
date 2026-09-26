@@ -30,7 +30,7 @@ START_USD=$(worth); START_ETH=$(cast balance "$ME" --rpc-url $R); START_USDC=$(b
 echo "start: $(cast from-wei $START_ETH) ETH + $(cast format-units $START_USDC 6) USDC (worth \$$START_USD)"
 source scripts/mainnet_flow.sh
 echo "9/9 take everything back: retire both Aqua strategies, remove the v4 liquidity, redeem all Morpho shares, unwrap WETH"
-(cd frontend && NETWORK=$NET DEPLOYER_PK=$PK npx tsx scripts/withdraw.ts) | sed 's/^/   /'
+NET=$NET ICEBERG_ENV=$ENV_FILE ./scripts/withdraw_mainnet.sh | sed 's/^/   /'   # the same script you run on mainnet
 END_USD=$(worth); END_ETH=$(cast balance "$ME" --rpc-url $R); END_USDC=$(bal 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
 node -e "
 const [se,su,ee,eu,px]=process.argv.slice(1).map(Number), p=px/1e8, inr=Number(process.env.USD_INR||88);

@@ -186,7 +186,10 @@ export class Iceberg {
   async activity(fromBlock: number, labels: Record<string, string>) {
     const to = await this.provider.getBlockNumber();
     const from = Math.max(fromBlock, to - 4000);
-    const q = (c: ethers.Contract, name: string) => c.queryFilter(c.filters[name](), from, to).catch(() => [] as any[]);
+    // hosted Base RPCs (Alchemy free tier, mainnet.base.org) refuse wide eth_getLogs ranges: read logs from a node that allows them
+    const local = /127\.0\.0\.1|localhost/.test(this.dep.rpc || "");
+    const lp = local ? this.provider : new ethers.JsonRpcProvider(process.env.LOGS_RPC || "https://base-rpc.publicnode.com", Number(this.dep.chainId || 8453), { staticNetwork: true });
+    const q = (c: ethers.Contract, name: string) => (c.connect(lp) as ethers.Contract).queryFilter(c.filters[name](), from, to).catch(() => [] as any[]);
     const [hs, sp, pk, up, aq, ps, uv, vv, ls, of, sh, dk] = await Promise.all([q(this.hook, "HookSwap"), q(this.hook, "Split"), q(this.hook, "Parked"), q(this.hook, "Unparked"),
       q(this.router, "Swapped"), q(this.router, "PASplit"), q(this.vaultHooks, "Unvaulted"), q(this.vaultHooks, "Vaulted"), q(this.params, "LambdaSet"),
       this.official ? q(this.official, "Swapped") : Promise.resolve([]), q(this.aqua, "Shipped"), q(this.aqua, "Docked")]);

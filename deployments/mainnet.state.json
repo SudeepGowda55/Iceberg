@@ -1,0 +1,12 @@
+{
+ "events": [],
+ "aqua": {
+  "orderHash": "0x3611f9f64f562eafdb586413c601b9165658d42ae13c80024359a41cfa6789c8",
+  "salt": 2,
+  "rebalancedAt": 1790458652,
+  "history": [
+   "0x363776588003c6e7cb24d5ff02c08c90cf72b0d3568f3beb4eaf7b51880afa2f",
+   "0x3611f9f64f562eafdb586413c601b9165658d42ae13c80024359a41cfa6789c8"
+  ]
+ }
+}

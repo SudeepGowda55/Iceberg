@@ -141,8 +141,9 @@ export async function apiQuote(net: string, venue: Venue, side: "buy" | "sell", 
 
 export async function apiSwap(net: string, venue: Venue, side: "buy" | "sell", usd: number, who: "cli" | "ui" = "cli") {
   requireLive(net);
-  const b = icebergFor(net), pk = b.dep.keys?.[who];
-  if (!pk) throw new Error("swaps via the API are only enabled on the local fork");
+  // local fork: test keys. Base mainnet: only when the local UI is started with MAINNET_UI_TRADES=1 and your DEPLOYER_PK
+  const b = icebergFor(net), pk = b.dep.keys?.[who] || (net === "mainnet" && process.env.MAINNET_UI_TRADES === "1" ? process.env.DEPLOYER_PK : undefined);
+  if (!pk) throw new Error("swaps via the API are only enabled on the local fork (or on mainnet with MAINNET_UI_TRADES=1)");
   const q = await apiQuote(net, venue, side, usd);
   const amountIn = side === "buy" ? BigInt(Math.round(usd * 1e6)) : BigInt(Math.round(q.amountIn * 1e18));
   // one retry: the gas estimate can race with a keeper transaction landing in the same moment on the fork

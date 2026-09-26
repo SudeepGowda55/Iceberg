@@ -54,6 +54,8 @@ export default function Page() {
     if (method === "POST") refresh();
   };
 
+  // real money on mainnet: start the trade size at 5 cents
+  useEffect(() => { if (st?.network === "mainnet") setUsd(x => (x > 1 ? 0.05 : x)); }, [st?.network]);
   const u = st?.uniswapV4, a = st?.oneInchAqua, sh = st?.sharedLiquidity, rb = st?.rebalance, k = st?.keeper, pol = k?.policy;
   const [rbMsg, setRbMsg] = useState<any>("");
   const rebalance = async () => {
@@ -174,7 +176,7 @@ export default function Page() {
 
       <section id="trade"><h2>Trade against both venues</h2>
         <div className="panel">
-          <div className="row"><span className="t2">size $</span><input type="number" value={usd} min={1} max={2000} onChange={e => setUsd(Number(e.target.value) || 1)} style={{ width: 90 }} /></div>
+          <div className="row"><span className="t2">size $</span><input type="number" value={usd} min={0.01} step={0.01} max={2000} onChange={e => setUsd(Number(e.target.value) || 1)} style={{ width: 90 }} /></div>
           <div className="btnrow">
             <button id="buy-v4" disabled={!!st?.snapshot} className="primary" onClick={() => trade("v4", "buy")}>Buy ETH on Uniswap v4</button>
             <button id="sell-v4" disabled={!!st?.snapshot} onClick={() => trade("v4", "sell")}>Sell ETH on Uniswap v4</button>
@@ -189,7 +191,7 @@ export default function Page() {
 
       <section id="activity"><h2>On-chain activity</h2>
         <div className="panel feed">
-          {act.items.length ? act.items.map((i: any) => <div key={i.key} className={`ev${i.isNew ? " fresh" : ""}`}><span className={`srcpill ${srcClass(i.source)}`}>{i.source}</span> {i.text} <span className="muted">· block {i.block} · tx {short(i.tx)}</span></div>) : <div className="empty">no activity yet</div>}
+          {act.items.length ? act.items.map((i: any) => <div key={i.key} className={`ev${i.isNew ? " fresh" : ""}`}><span className={`srcpill ${srcClass(i.source)}`}>{i.source}</span> {i.text} <span className="muted">· block {i.block} · tx {st?.network === "mainnet" ? <a href={`https://basescan.org/tx/${i.tx}`} target="_blank" rel="noreferrer">{short(i.tx)} ↗</a> : short(i.tx)}</span></div>) : <div className="empty">no activity yet</div>}
         </div>
       </section>
 

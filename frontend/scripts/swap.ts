@@ -13,5 +13,5 @@ import { apiQuote, apiSwap, icebergFor, wallet } from "../lib/server";
   const q = await apiQuote(net, venue, side, Number(usd));
   const amountIn = side === "buy" ? BigInt(Math.round(Number(usd) * 1e6)) : BigInt(Math.round(q.amountIn * 1e18));
   const rc = await (await b.swapTx(wallet(pk, b), venue, side, amountIn)).wait();
-  console.log(`${q.venue}: ${side} ${fmt(side === "buy" ? q.amountOut : q.amountIn, 6)} WETH · tx ${rc!.hash}`);
+  console.log(`${q.venue}: ${side} ${fmt(side === "buy" ? q.amountOut : q.amountIn, 6)} WETH · tx ${rc!.hash}${net === "mainnet" ? `\n   https://basescan.org/tx/${rc!.hash}` : ""}`);
 })().catch(e => { console.error(e.shortMessage || e.message); process.exit(1); });
