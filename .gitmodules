@@ -1,0 +1,6 @@
+[submodule "lib/swap-vm"]
+	path = lib/swap-vm
+	url = https://github.com/1inch/swap-vm.git
+[submodule "lib/uniswap-hooks"]
+	path = lib/uniswap-hooks
+	url = https://github.com/openzeppelin/uniswap-hooks

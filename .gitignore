@@ -1,0 +1,16 @@
+out/
+cache/
+broadcast/
+.run/
+node_modules/
+.env
+.env*
+!.env.example
+deployments/local*.json
+deployments/dryrun*.json
+deployments/*.log
+frontend/.next/
+*.tsbuildinfo
+frontend/node_modules/
+frontend/.next/
+deployments/local.state.json

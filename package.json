@@ -1,0 +1,12 @@
+{
+  "name": "iceberg",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "rehearse": "bash scripts/rehearse_mainnet.sh"
+  },
+  "devDependencies": {
+    "ethers": "^6.13.4",
+    "tsx": "^4.19.2"
+  }
+}
