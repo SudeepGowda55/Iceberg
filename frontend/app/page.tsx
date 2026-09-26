@@ -54,8 +54,8 @@ export default function Page() {
     if (method === "POST") refresh();
   };
 
-  // real money on mainnet: start the trade size at 5 cents
-  useEffect(() => { if (st?.network === "mainnet") setUsd(x => (x > 1 ? 0.05 : x)); }, [st?.network]);
+  // real money on mainnet (and ~$1 positions): start the trade size at 1 cent
+  useEffect(() => { if (st?.network === "mainnet") setUsd(x => (x > 1 ? 0.01 : x)); }, [st?.network]);
   const u = st?.uniswapV4, a = st?.oneInchAqua, sh = st?.sharedLiquidity, rb = st?.rebalance, k = st?.keeper, pol = k?.policy;
   const [rbMsg, setRbMsg] = useState<any>("");
   const rebalance = async () => {

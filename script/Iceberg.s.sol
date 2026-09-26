@@ -133,7 +133,9 @@ contract DeployHook is Script {
         uint256 weth = vm.envUint("HOOK_WETH_AMOUNT");
         (, int256 px,,,) = IFeed(vm.envOr("FEED", C.FEED_ETH_USD)).latestRoundData();
         uint256 usdc = weth * uint256(px) / 1e20;
-        IcebergHook.Config memory c = IcebergHook.Config(me, C.HOOK_FEE_PIPS, C.FALLBACK_LAMBDA, C.MIN_LAMBDA, C.HOOK_MAX_LAMBDA,
+        // HOOK_VARIANT (default 0) nudges the fallback λ by a few wei: a new CREATE2 address for a fresh pool on a chain where
+        // the default hook already exists (re-funding after a full withdraw, whose locked minimum-liquidity dust skews the old pool)
+        IcebergHook.Config memory c = IcebergHook.Config(me, C.HOOK_FEE_PIPS, C.FALLBACK_LAMBDA + uint64(vm.envOr("HOOK_VARIANT", uint256(0))), C.MIN_LAMBDA, C.HOOK_MAX_LAMBDA,
             ILambdaSource(params), IERC4626(C.VAULT_WETH), IERC4626(C.VAULT_USDC));
         bytes memory args = abi.encode(IPoolManager(C.POOL_MANAGER), c);
         (address hookAddr, bytes32 salt) = HookMiner.find(C.CREATE2_DEPLOYER, C.HOOK_FLAGS, type(IcebergHook).creationCode, args);
@@ -201,5 +203,43 @@ contract FillHook is Script {
             console.log(sell ? "V4_SELL" : "V4_BUY", amount);
         }
         vm.stopBroadcast();
+    }
+}
+
+/// @notice Re-fund the 1inch side of an existing deployment after a full withdraw: the same router and params, a new Aqua
+///         strategy (next salt, since a docked strategy can never be shipped again) and fresh official-router hooks (the
+///         shared order carries no salt, so new hooks give it a new hash). Expects the WETH already wrapped in the wallet.
+/// @dev env: PK, ROUTER, HOOKS, PARAMS, SALT, AQUA_WETH, LAMBDA (wad). The v4 side re-deploys with DeployHook + HOOK_VARIANT.
+/// @dev env: PK, ROUTER, HOOKS, PARAMS, HOOK, SALT, AQUA_WETH, HOOK_WETH, LAMBDA (wad)
+contract Refund is Script {
+    function run() external {
+        uint256 pk = vm.envUint("PK");
+        address me = vm.addr(pk);
+        address router = vm.envAddress("ROUTER"); address hooks = vm.envAddress("HOOKS"); address params = vm.envAddress("PARAMS");
+        uint256 aw = vm.envUint("AQUA_WETH");
+        (, int256 px,,,) = IFeed(C.FEED_ETH_USD).latestRoundData();
+        uint256 au = aw * uint256(px) / 1e20;
+
+        vm.startBroadcast(pk);
+        // 1inch venue: vault the inventory, ship the next-salt strategy, give it the keeper's λ
+        IERC20(C.WETH).approve(C.VAULT_WETH, aw); IERC4626(C.VAULT_WETH).deposit(aw, me);
+        IERC20(C.USDC).approve(C.VAULT_USDC, au); IERC4626(C.VAULT_USDC).deposit(au, me);
+        ISwapVM.Order memory o = C.order(me, hooks, params, C.FEED_ETH_USD, uint64(vm.envUint("SALT")));
+        address[] memory t = new address[](2); t[0] = C.WETH; t[1] = C.USDC;
+        uint256[] memory a = new uint256[](2); a[0] = aw; a[1] = au;
+        bytes32 h = IAqua(C.AQUA).ship(router, abi.encode(o), t, a);
+        IcebergParams(params).setLambda(me, h, uint64(vm.envUint("LAMBDA")), 0);
+        // Aqua shared liquidity on 1inch's official router, through fresh vault hooks
+        VaultedInventoryHooks oh = new VaultedInventoryHooks(C.OFFICIAL_ROUTER);
+        IERC20(C.VAULT_WETH).approve(address(oh), type(uint256).max); IERC20(C.VAULT_USDC).approve(address(oh), type(uint256).max);
+        IERC20(C.WETH).approve(address(oh), type(uint256).max); IERC20(C.USDC).approve(address(oh), type(uint256).max);
+        uint256[] memory sa = new uint256[](2); sa[0] = aw * C.SHARED_BPS / 10_000; sa[1] = au * C.SHARED_BPS / 10_000;
+        bytes32 sh = IAqua(C.AQUA).ship(C.OFFICIAL_ROUTER, abi.encode(C.sharedOrder(me, address(oh))), t, sa);
+        vm.stopBroadcast();
+        console.log("ORDER_HASH");
+        console.logBytes32(h);
+        console.log("SHARED_ORDER_HASH");
+        console.logBytes32(sh);
+        console.log("OFFICIAL_HOOKS", address(oh));
     }
 }

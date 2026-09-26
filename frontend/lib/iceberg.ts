@@ -85,6 +85,10 @@ export class Iceberg {
       const tip = 1_000_000n, base = blk?.baseFeePerGas ?? f.gasPrice ?? 0n;
       return new ethers.FeeData(f.gasPrice, base * 2n + tip, tip);
     };
+    // MetaMorpho withdrawals (vault hooks, hook unparking) vary in gas with the vault's state: a tight estimate ran out of
+    // gas on mainnet. Pad every estimate by 40%; only the gas actually used is paid.
+    const estimateGas = this.provider.estimateGas.bind(this.provider);
+    this.provider.estimateGas = async (tx: ethers.TransactionRequest) => (await estimateGas(tx)) * 140n / 100n;
     const c = (a: string, abi: string[]) => new ethers.Contract(a, abi, this.provider);
     this.aqua = c(dep.aqua, ABI.aqua); this.router = c(dep.router, ABI.router); this.lens = c(dep.lens, ABI.lens);
     this.params = c(dep.params, ABI.params); this.hook = c(dep.hook, ABI.hook); this.vaultHooks = c(dep.hooks, ABI.vaultHooks);
