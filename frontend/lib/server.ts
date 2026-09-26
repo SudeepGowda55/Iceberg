@@ -231,24 +231,31 @@ async function rebalanceAquaUnlocked(net: string, opts: { force?: boolean; band?
   // 2. rebalance the maker's Morpho holdings to 50/50 at the live price, trading the excess on Uniswap v3
   const heldW: bigint = await vW.convertToAssets(await vW.balanceOf(me)), heldU: bigint = await vU.convertToAssets(await vU.balanceOf(me));
   const valW = Number(heldW) / 1e18 * s, valU = Number(heldU) / 1e6, half = (valW + valU) / 2;
-  if (valW > half) {
+  // dust (under $1 off 50/50) is not worth a Uniswap trade, and its 2% slippage floor rounds above what the pool returns
+  if (Math.abs(valW - half) < 1) out.txs.push({ what: "already 50/50 within $1: no Uniswap trade needed", tx: "" });
+  else if (valW > half) {
     const sellW = BigInt(Math.floor((valW - half) / s * 1e18));
     await tx(`withdrew ${fmt(Number(sellW) / 1e18, 5)} WETH from Morpho`, vW.withdraw(sellW, me, me));
     if ((await weth.allowance(me, V3_ROUTER)) < sellW) await tx("approve WETH for Uniswap", weth.approve(V3_ROUTER, ethers.MaxUint256));
     const u0: bigint = await usdc.balanceOf(me);
     await tx(`sold ${fmt(Number(sellW) / 1e18, 5)} WETH on Uniswap v3 (0.05%)`, v3.exactInputSingle([d.weth, d.usdc, 500, me, sellW, BigInt(Math.floor((valW - half) * 0.98 * 1e6)), 0]));
-    const got: bigint = (await usdc.balanceOf(me)) - u0;
-    if ((await usdc.allowance(me, d.vaultUsdc)) < got) await tx("approve USDC for Morpho", usdc.approve(d.vaultUsdc, ethers.MaxUint256));
-    await tx(`deposited ${fmt(Number(got) / 1e6)} USDC into Morpho`, vU.deposit(got, me));
+    // deposit what the wallet really holds now (never more than the trade returned)
+    const bal: bigint = await usdc.balanceOf(me), got = bal - u0 < bal ? bal - u0 : bal;
+    if (got > 0n) {
+      if ((await usdc.allowance(me, d.vaultUsdc)) < got) await tx("approve USDC for Morpho", usdc.approve(d.vaultUsdc, ethers.MaxUint256));
+      await tx(`deposited ${fmt(Number(got) / 1e6)} USDC into Morpho`, vU.deposit(got, me));
+    }
   } else if (valU > half) {
     const sellU = BigInt(Math.floor((valU - half) * 1e6));
     await tx(`withdrew ${fmt(Number(sellU) / 1e6)} USDC from Morpho`, vU.withdraw(sellU, me, me));
     if ((await usdc.allowance(me, V3_ROUTER)) < sellU) await tx("approve USDC for Uniswap", usdc.approve(V3_ROUTER, ethers.MaxUint256));
     const w0: bigint = await weth.balanceOf(me);
     await tx(`bought WETH with ${fmt(Number(sellU) / 1e6)} USDC on Uniswap v3 (0.05%)`, v3.exactInputSingle([d.usdc, d.weth, 500, me, sellU, BigInt(Math.floor((valU - half) / s * 0.98 * 1e18)), 0]));
-    const got: bigint = (await weth.balanceOf(me)) - w0;
-    if ((await weth.allowance(me, d.vaultWeth)) < got) await tx("approve WETH for Morpho", weth.approve(d.vaultWeth, ethers.MaxUint256));
-    await tx(`deposited ${fmt(Number(got) / 1e18, 5)} WETH into Morpho`, vW.deposit(got, me));
+    const bal: bigint = await weth.balanceOf(me), got = bal - w0 < bal ? bal - w0 : bal;
+    if (got > 0n) {
+      if ((await weth.allowance(me, d.vaultWeth)) < got) await tx("approve WETH for Morpho", weth.approve(d.vaultWeth, ethers.MaxUint256));
+      await tx(`deposited ${fmt(Number(got) / 1e18, 5)} WETH into Morpho`, vW.deposit(got, me));
+    }
   }
   // 3. re-ship with salt + 1, balances = the rebalanced Morpho holdings, and carry λ over to the new strategy
   const salt = Number(d.salt ?? 1) + 1;

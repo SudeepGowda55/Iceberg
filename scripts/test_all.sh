@@ -11,7 +11,7 @@ echo "== solidity tests"
 OUT=$(forge test 2>&1); echo "$OUT" | grep -E "Suite result|Ran [0-9]+ test suites" | sed 's/^/  /'
 echo "$OUT" | grep -q "0 failed" && ! echo "$OUT" | grep -qE "[1-9][0-9]* failed" && echo "  [PASS] all Solidity tests" || fail "Solidity tests"
 echo "== local stack (fresh)"
-./scripts/start_local.sh > .run/start.out 2>&1 &
+SIM_ARB=${SIM_ARB:-0} ./scripts/start_local.sh > .run/start.out 2>&1 &   # arbitrageur off: it trades the venues apart before the same-price check
 for _ in $(seq 1 240); do grep -q READY .run/start.out 2>/dev/null && break; sleep 2; done
 grep -q READY .run/start.out && echo "  [PASS] stack up" || { fail "stack did not start"; tail -20 .run/start.out; exit 1; }
 echo "   waiting for the keeper's first fee-aware decision…"
