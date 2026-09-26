@@ -12,7 +12,8 @@ const check = (name: string, cond: any, detail = "") => { ok &&= !!cond; console
   check("keeper is running (ticked in the last 2 minutes)", last && Date.now() / 1000 - last.t < 120, last ? `(${Math.floor(Date.now() / 1000 - last.t)}s ago)` : "");
   check("keeper read live Base Chainlink", last?.live?.ethUsd > 0, `($${last?.live?.ethUsd})`);
   check("keeper derived a fee-aware λ from real prices", last?.policy?.minutes > 60 && last.lambda >= last.policy.floor && last.lambda <= 1, `(λ ${last?.lambda}, ${last?.policy?.minutes} min, floor ${last?.policy?.floor})`);
-  check("both venues run the keeper's λ", Math.abs(s.uniswapV4.lambdaPct - last.lambda * 100) < 0.01 && Math.abs(s.oneInchAqua.lambdaPct - last.lambda * 100) < 0.01, `(v4 ${s.uniswapV4.lambdaPct}%, Aqua ${s.oneInchAqua.lambdaPct}%)`);
+  const capped = Math.min(last.lambda * 100, s.uniswapV4.maxLambdaPct);
+  check("both venues run the keeper's λ (within the shared max-λ cap)", Math.abs(s.uniswapV4.lambdaPct - capped) < 0.01 && Math.abs(s.oneInchAqua.lambdaPct - capped) < 0.01, `(policy ${last.lambda * 100}%, cap ${s.uniswapV4.maxLambdaPct}%, v4 ${s.uniswapV4.lambdaPct}%, Aqua ${s.oneInchAqua.lambdaPct}%)`);
   check("v4 idle reserves earn in Morpho", s.uniswapV4.parkedInMorphoUsd > 0, `($${s.uniswapV4.parkedInMorphoUsd.toFixed(2)})`);
   check("Aqua inventory is held in Morpho vaults", s.oneInchAqua.inMorphoUsd > 0.9 * s.oneInchAqua.totalValueUsd, `($${s.oneInchAqua.inMorphoUsd.toFixed(2)} of $${s.oneInchAqua.totalValueUsd.toFixed(2)})`);
   const [qv, qa] = await Promise.all([apiQuote(NET, "v4", "buy", 5), apiQuote(NET, "aqua", "buy", 5)]);
@@ -35,7 +36,7 @@ const check = (name: string, cond: any, detail = "") => { ok &&= !!cond; console
   check("weight tracking: rebalance retired, traded on Uniswap and re-shipped the Aqua position", rb.rebalanced && rb.newOrderHash && rb.newOrderHash !== oldHash, `(salt ${rb.salt}, ${rb.txs.length} txs)`);
   check("after the rebalance the ETH weight is back at 50%", Math.abs(rb.weightAfter - 0.5) < 0.005, `(${(rb.weightBefore * 100).toFixed(2)}% -> ${(rb.weightAfter * 100).toFixed(2)}%)`);
   const s2 = await apiStatus(NET);
-  check("the new strategy carries the keeper's λ", Math.abs(s2.oneInchAqua.lambdaPct - last.lambda * 100) < 0.01, `(${s2.oneInchAqua.lambdaPct}%)`);
+  check("the new strategy carries the keeper's λ", Math.abs(s2.oneInchAqua.lambdaPct - capped) < 0.01, `(${s2.oneInchAqua.lambdaPct}%)`);
   const sa2 = await apiSwap(NET, "aqua", "buy", 3);
   check("fills continue on the re-shipped strategy", sa2.tx && sa2.amountOut > 0, `(tx ${sa2.tx.slice(0, 12)}…)`);
   const q0 = await b.quote("v4", "buy", 10n ** 12n);

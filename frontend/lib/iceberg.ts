@@ -22,6 +22,7 @@ export const ABI = {
     "function sharedOrder(address maker, address officialHooks) pure returns (tuple(address maker, uint256 traits, bytes data))",
     "function takerData(address taker, bool sellWeth) pure returns (bytes)"],
   params: ["function get(address maker, bytes32 positionId) view returns (uint64 lambdaWad, int64 driftWad, bool set)",
+    "function config(address maker) view returns (address keeper, uint64 minWad, uint64 maxWad)",
     "function setLambda(address maker, bytes32 positionId, uint64 lambdaWad, int64 driftWad)",
     "event LambdaSet(address indexed maker, bytes32 indexed positionId, uint64 lambdaWad, int64 driftWad, address indexed by)"],
   hook: ["function reserves() view returns (uint256 r0, uint256 r1)", "function claims() view returns (uint256 c0, uint256 c1)",
@@ -38,7 +39,11 @@ export const ABI = {
   swapper: ["function swap(tuple(address currency0, address currency1, uint24 fee, int24 tickSpacing, address hooks) key, tuple(bool zeroForOne, int256 amountSpecified, uint160 sqrtPriceLimitX96) params, tuple(bool takeClaims, bool settleUsingBurn) testSettings, bytes hookData) payable returns (int256)"],
   erc20: ["function balanceOf(address) view returns (uint256)", "event Transfer(address indexed from, address indexed to, uint256 value)"],
   vault: ["function balanceOf(address) view returns (uint256)", "function convertToAssets(uint256) view returns (uint256)",
-    "function withdraw(uint256 assets, address receiver, address owner) returns (uint256)", "function deposit(uint256 assets, address receiver) returns (uint256)"],
+    "function withdraw(uint256 assets, address receiver, address owner) returns (uint256)", "function deposit(uint256 assets, address receiver) returns (uint256)",
+    "function redeem(uint256 shares, address receiver, address owner) returns (uint256)"],
+  hookLp: ["function balanceOf(address) view returns (uint256)",
+    "function removeLiquidity(tuple(uint256 liquidity, uint256 amount0Min, uint256 amount1Min, uint256 deadline, int24 tickLower, int24 tickUpper, bytes32 userInputSalt) params) returns (int256)"],
+  weth9: ["function withdraw(uint256)", "function balanceOf(address) view returns (uint256)"],
   erc20rw: ["function approve(address,uint256) returns (bool)", "function allowance(address,address) view returns (uint256)", "function balanceOf(address) view returns (uint256)"],
   v3router: ["function exactInputSingle(tuple(address tokenIn, address tokenOut, uint24 fee, address recipient, uint256 amountIn, uint256 amountOutMinimum, uint160 sqrtPriceLimitX96) params) payable returns (uint256)"],
   feed: ["function latestRoundData() view returns (uint80, int256, uint256, uint256, uint80)", "function push(int256)"],
@@ -71,7 +76,15 @@ export class Iceberg {
 
   constructor(dep: any) {
     this.dep = dep;
-    this.provider = new ethers.JsonRpcProvider(dep.rpc, 8453, { staticNetwork: true });
+    this.provider = new ethers.JsonRpcProvider(dep.rpc, dep.chainId || 8453, { staticNetwork: true });
+    // Base's priority tips are ~0.001 gwei; nodes (and anvil forks) often suggest 1 gwei, which makes a small wallet
+    // look unable to afford a transaction. Cap the tip at 0.001 gwei and the fee at 2x base fee + tip.
+    const getFeeData = this.provider.getFeeData.bind(this.provider);
+    this.provider.getFeeData = async () => {
+      const f = await getFeeData(), blk = await this.provider.getBlock("latest");
+      const tip = 1_000_000n, base = blk?.baseFeePerGas ?? f.gasPrice ?? 0n;
+      return new ethers.FeeData(f.gasPrice, base * 2n + tip, tip);
+    };
     const c = (a: string, abi: string[]) => new ethers.Contract(a, abi, this.provider);
     this.aqua = c(dep.aqua, ABI.aqua); this.router = c(dep.router, ABI.router); this.lens = c(dep.lens, ABI.lens);
     this.params = c(dep.params, ABI.params); this.hook = c(dep.hook, ABI.hook); this.vaultHooks = c(dep.hooks, ABI.vaultHooks);

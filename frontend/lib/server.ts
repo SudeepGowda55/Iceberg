@@ -14,6 +14,7 @@ export function saveState(net: string, st: any) { fs.writeFileSync(path.join(DEP
 /** Deployment plus the keeper's current Aqua strategy (the keeper re-ships with a new salt after each rebalance) */
 export function currentDep(net = "local") {
   const d = loadDep(net), st = loadState(net);
+  if (net === "mainnet" && process.env.BASE_RPC) d.rpc = process.env.BASE_RPC; // private RPC from .env, never stored in deployments/
   if (st?.aqua?.orderHash) { d.orderHash = st.aqua.orderHash; d.salt = st.aqua.salt; }
   d.salt ??= 1;
   return d;
@@ -34,7 +35,7 @@ export function labels(dep: any): Record<string, string> {
 // ------------------------------------------------------------------------------------------------ live market
 
 const LIVE_FEED = "0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70";
-const LIVE_RPCS = [process.env.LIVE_RPC || "https://mainnet.base.org", "https://base-rpc.publicnode.com", "https://base.drpc.org", "https://1rpc.io/base"];
+const LIVE_RPCS = [process.env.LIVE_RPC || process.env.BASE_RPC || "https://mainnet.base.org", "https://base-rpc.publicnode.com", "https://base.drpc.org", "https://1rpc.io/base"];
 /** Live Base mainnet Chainlink ETH/USD, rotating across public RPCs because free endpoints rate-limit */
 export async function liveMarket() {
   let last: any;
@@ -212,7 +213,11 @@ async function rebalanceAquaUnlocked(net: string, opts: { force?: boolean; band?
   const vW = new ethers.Contract(d.vaultWeth, ABI.vault, signer), vU = new ethers.Contract(d.vaultUsdc, ABI.vault, signer);
   const weth = new ethers.Contract(d.weth, ABI.erc20rw, signer), usdc = new ethers.Contract(d.usdc, ABI.erc20rw, signer);
   const v3 = new ethers.Contract(V3_ROUTER, ABI.v3router, signer);
-  const tx = async (what: string, p: Promise<any>) => { const rc = await (await p).wait(); out.txs.push({ what, tx: rc.hash }); return rc; };
+  const tx = async (what: string, p: Promise<any>) => {
+    if (process.env.DEBUG) console.log(`  … ${what}`);
+    try { const rc = await (await p).wait(); out.txs.push({ what, tx: rc.hash }); return rc; }
+    catch (e: any) { throw new Error(`${what}: ${e.shortMessage || e.message}`); }
+  };
   // 1. retire the current strategy (resumable: a rebalance interrupted after docking picks up from here)
   const [, cnt] = await b.aqua.rawBalances(d.maker, d.router, d.orderHash, d.weth);
   if (Number(cnt) === 255) out.txs.push({ what: "strategy already retired by an interrupted rebalance: resuming", tx: "" });

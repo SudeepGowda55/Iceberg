@@ -6,6 +6,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ROOT=$(pwd); RUN=$ROOT/.run; mkdir -p "$RUN" deployments
+[ -f .env ] && { set -a; source .env; set +a; }   # BASE_RPC (e.g. Alchemy) for the fork upstream and live price reads
 UPSTREAM=${BASE_RPC:-https://mainnet.base.org}
 PORT=${FORK_PORT:-8555}; UI_PORT=${UI_PORT:-8788}; R=http://127.0.0.1:$PORT
 MN="test test test test test test test test test test test junk"
@@ -16,7 +17,7 @@ WETH=0x4200000000000000000000000000000000000006; USDC=0x833589fCD6eDb6E08f4c7C32
 PM=0x498581fF718922c3f8e6A244956aF099B2652b2b; LIVE_FEED=0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70
 
 "$ROOT/scripts/stop_local.sh" >/dev/null 2>&1 || true
-echo "1/6 local Base fork from $UPSTREAM on :$PORT"
+echo "1/6 local Base fork from $(echo "$UPSTREAM" | sed -E 's#(/v2/|/v3/).*#\1<key hidden>#') on :$PORT"
 nohup anvil --fork-url "$UPSTREAM" --port "$PORT" --auto-impersonate --silent > "$RUN/anvil.log" 2>&1 &
 echo $! > "$RUN/anvil.pid"
 for _ in $(seq 1 30); do cast block-number --rpc-url $R >/dev/null 2>&1 && break; sleep 1; done
@@ -69,8 +70,8 @@ JSON
 rm -f deployments/local.state.json
 
 echo "6/6 fee-aware keeper and the UI + API"
-(cd frontend && NETWORK=local INTERVAL=${INTERVAL:-20} nohup node --import tsx scripts/keeper.ts >> "$RUN/keeper.log" 2>&1 & echo $! > "$RUN/keeper.pid")
+(cd frontend && NETWORK=local INTERVAL=${INTERVAL:-20} LIVE_RPC=${BASE_RPC:-} nohup node --import tsx scripts/keeper.ts >> "$RUN/keeper.log" 2>&1 & echo $! > "$RUN/keeper.pid")
 (cd frontend && npx next build >/dev/null 2>&1)
-(cd frontend && WI_ROOT="$ROOT" nohup npx next start -p "$UI_PORT" > "$RUN/ui.log" 2>&1 & echo $! > "$RUN/ui.pid")
+(cd frontend && WI_ROOT="$ROOT" LIVE_RPC=${BASE_RPC:-} nohup npx next start -p "$UI_PORT" > "$RUN/ui.log" 2>&1 & echo $! > "$RUN/ui.pid")
 for _ in $(seq 1 40); do curl -s -o /dev/null "http://localhost:$UI_PORT/api/status" && break; sleep 1; done
 echo "READY. UI http://localhost:$UI_PORT/ | API http://localhost:$UI_PORT/api/status | fork $R | keeper log .run/keeper.log"

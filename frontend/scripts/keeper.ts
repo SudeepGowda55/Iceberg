@@ -21,10 +21,17 @@ async function publishLambda(lambda: number, ev: any) {
   const want = BigInt(Math.round(lambda * 1e4)) * 10n ** 14n;
   // the Aqua position is keyed by (maker, order hash); the v4 pool by (hook, pool id): the hook is its own maker
   for (const [maker, id, name] of [[d.maker, d.orderHash, "1inch Aqua position"], [d.hook, d.poolId, "Uniswap v4 pool"]] as const) {
-    const cur = await b.params.get(maker, id);
-    if (cur[2] && BigInt(cur[0]) === want) continue;
-    const rc = await (await params.setLambda(maker, id, want, 0)).wait();
-    ev.actions.push({ what: `λ = ${fmt(lambda * 100, 0)}% published for the ${name}`, tx: rc!.hash });
+    try {
+      // clamp to this venue's own box (the v4 pool caps λ at max λ, the guarantee that parked reserves are never needed)
+      const [, lo, hi] = await b.params.config(maker);
+      let v = want;
+      if (BigInt(hi) > 0n && v > BigInt(hi)) v = BigInt(hi);
+      if (v < BigInt(lo)) v = BigInt(lo);
+      const cur = await b.params.get(maker, id);
+      if (cur[2] && BigInt(cur[0]) === v) continue;
+      const rc = await (await params.setLambda(maker, id, v, 0)).wait();
+      ev.actions.push({ what: `λ = ${fmt(Number(v) / 1e16, 0)}% published for the ${name}${v !== want ? ` (its cap; policy wanted ${fmt(lambda * 100, 0)}%)` : ""}`, tx: rc!.hash });
+    } catch (e: any) { keeper.reset(); ev.actions.push({ what: `could not publish λ for the ${name}: ${e.shortMessage || e.message}` }); } // never abort the tick
   }
 }
 
@@ -108,7 +115,7 @@ async function tick(n: number, st: any, policyEvery: number) {
   const st = loadState(NET) || { events: [] };
   const policyEvery = Math.max(1, Math.round(600_000 / INTERVAL)); // re-derive λ from fresh history every ~10 minutes
   for (let n = 0; n < TICKS; n++) {
-    try { await withMakerLock(() => tick(n, st, policyEvery)); } catch (e: any) { keeper.reset(); console.log(`[tick ${n}] error, retrying next tick: ${e.shortMessage || e.message}`); }
+    try { await withMakerLock(() => tick(n, st, policyEvery)); } catch (e: any) { keeper.reset(); console.log(`[tick ${n}] error, retrying next tick: ${e.shortMessage || e.message}${process.env.DEBUG ? "\n" + (e.stack || "").split("\n").slice(0, 6).join("\n") : ""}`); }
     if (n + 1 < TICKS) await sleep(INTERVAL);
   }
 })();

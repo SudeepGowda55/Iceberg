@@ -26,10 +26,20 @@ worth() { local hr; hr=${1:-"0 0"}; node -e "const [e,w,u,vw,vu,hw,hu,p]=process
   "$(inVault 0xa0E430870c4604CcfC7B38Ca7845B1FF653D0ff1)" "$(inVault 0xbeeF010f9cb27031ad51e3333f9aF9C6B1228183)" $hr "$ETHPX"; }
 rm -f deployments/$NET.json
 echo "fork of Base at block $FORK_BLOCK on $R | wallet $ME | real Base gas $REAL_GAS wei"
-START_USD=$(worth); echo "start: wallet worth \$$START_USD"
+START_USD=$(worth); START_ETH=$(cast balance "$ME" --rpc-url $R); START_USDC=$(bal 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
+echo "start: $(cast from-wei $START_ETH) ETH + $(cast format-units $START_USDC 6) USDC (worth \$$START_USD)"
 source scripts/mainnet_flow.sh
-HR=$(cast call "$HOOK" "reserves()(uint256,uint256)" --rpc-url $R | cut -d' ' -f1 | tr '\n' ' ')
-END_USD=$(worth "$HR")
+echo "9/9 take everything back: retire both Aqua strategies, remove the v4 liquidity, redeem all Morpho shares, unwrap WETH"
+(cd frontend && NETWORK=$NET DEPLOYER_PK=$PK npx tsx scripts/withdraw.ts) | sed 's/^/   /'
+END_USD=$(worth); END_ETH=$(cast balance "$ME" --rpc-url $R); END_USDC=$(bal 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
+node -e "
+const [se,su,ee,eu,px]=process.argv.slice(1).map(Number), p=px/1e8, inr=Number(process.env.USD_INR||88);
+const dE=(ee-se)/1e18, dU=(eu-su)/1e6, dV=dE*p+dU;
+console.log('before vs after the full cycle:');
+console.log('   ETH  ', (se/1e18).toFixed(8), '->', (ee/1e18).toFixed(8), '  (' + (dE>=0?'+':'') + dE.toFixed(8) + ')');
+console.log('   USDC ', (su/1e6).toFixed(6), '->', (eu/1e6).toFixed(6), '  (' + (dU>=0?'+':'') + dU.toFixed(6) + ')');
+console.log('   net change in value: \$' + dV.toFixed(4) + ' (Rs ' + (dV*inr).toFixed(1) + ') on the fork, gas included');
+" "$START_ETH" "$START_USDC" "$END_ETH" "$END_USDC" "$ETHPX"
 echo "cost report (what this exact run would cost on real Base mainnet)"
 FORK_RPC=$R UPSTREAM=$UPSTREAM npx tsx scripts/rehearsal-cost.ts "$FORK_BLOCK" "$ME" "$REAL_GAS" "$START_USD" "$END_USD" "$ETHPX" | sed 's/^/   /'
 echo "UI against this rehearsal: (cd frontend && WI_ROOT=.. npx next start -p 8788) then http://localhost:8788/?net=$NET · stop fork: kill \$(cat .run/rehearsal.pid)"

@@ -3,7 +3,8 @@
 # a fresh local stack, the end-to-end check against it, and the terminal demo. Leaves the stack running.
 set -uo pipefail
 cd "$(dirname "$0")/.."
-export BASE_RPC_URL=${BASE_RPC_URL:-https://mainnet.base.org}
+[ -f .env ] && { set -a; source .env; set +a; }
+export BASE_RPC_URL=${BASE_RPC_URL:-${BASE_RPC:-https://mainnet.base.org}}
 ok=0; fail() { echo "  [FAIL] $1"; ok=1; }
 echo "== build"; forge build >/dev/null 2>&1 && echo "  [PASS] forge build" || fail "forge build"
 echo "== solidity tests"

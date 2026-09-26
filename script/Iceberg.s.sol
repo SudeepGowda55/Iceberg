@@ -65,7 +65,7 @@ contract Ship is Script {
         // the same wallet also trades as the taker: the router pulls the taker's input with transferFrom
         IERC20(C.WETH).approve(router, type(uint256).max); IERC20(C.USDC).approve(router, type(uint256).max);
         // the maker is its own keeper here; λ may move in [0.1, 1]
-        IcebergParams(params).setKeeper(me, C.MIN_LAMBDA, 1e18);
+        IcebergParams(params).setKeeper(me, C.MIN_LAMBDA, C.HOOK_MAX_LAMBDA); // same λ ceiling as the v4 pool: both venues always run the same λ
         IcebergParams(params).setVault(C.WETH, C.VAULT_WETH); IcebergParams(params).setVault(C.USDC, C.VAULT_USDC); // deliverability cap
         ISwapVM.Order memory o = C.order(me, hooks, params, vm.envOr("FEED", C.FEED_ETH_USD), uint64(vm.envOr("SALT", uint256(1))));
         address[] memory t = new address[](2); t[0] = C.WETH; t[1] = C.USDC;
