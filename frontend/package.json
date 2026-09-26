@@ -1,0 +1,30 @@
+{
+  "name": "iceberg-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 8788",
+    "build": "next build",
+    "start": "next start -p 8788",
+    "keeper": "tsx scripts/keeper.ts",
+    "watch": "tsx scripts/watch.ts",
+    "swap": "tsx scripts/swap.ts",
+    "rebalance": "tsx scripts/rebalance.ts",
+    "demo": "tsx scripts/demo.ts",
+    "e2e": "tsx scripts/e2e-check.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ethers": "^6.17.0",
+    "next": "16.3.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
+  }
+}
