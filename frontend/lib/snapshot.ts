@@ -7,5 +7,5 @@ const DIR = path.join(process.cwd(), "data", "snapshot");
 export const snapshotMode = (net: string) => net === "local" && (process.env.SNAPSHOT === "1" || !!process.env.VERCEL);
 export const readSnapshot = (name: "status" | "activity" | "replay") => JSON.parse(fs.readFileSync(path.join(DIR, `${name}.json`), "utf8"));
 export function requireLive(net: string) {
-  if (snapshotMode(net)) throw new Error("this is a recorded snapshot of the local Base mainnet fork: trading is off here. Run ./scripts/start_local.sh to trade live.");
+  if (snapshotMode(net)) throw new Error("this page is a read-only snapshot: trading is off here");
 }

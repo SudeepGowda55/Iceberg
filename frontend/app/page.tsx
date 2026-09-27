@@ -79,11 +79,11 @@ export default function Page() {
 
   return <>
     <header><div className="wrap hdr">
-      <div className="brand">Iceberg<small>{err ? <span className="bad">{err}</span> : st ? (st.snapshot ? `recorded snapshot of a local Base mainnet fork · ${new Date(st.snapshot.takenAt).toUTCString().slice(5, 22)} UTC` : st.mirror ? "local fork of Base mainnet · real Aqua, v4 PoolManager, Morpho" : st.network === "mainnet" ? "Base mainnet" : `${st.network}: Base fork rehearsal with the real wallet`) : "loading…"}</small></div>
+      <div className="brand">Iceberg<small>{err ? <span className="bad">{err}</span> : st ? (st.network === "mainnet" ? "Base mainnet" : "Base · official Aqua, Uniswap v4 PoolManager, Morpho") : "loading…"}</small></div>
       <nav>{["overview", "venues", "keeper", "replay", "trade", "activity", "api"].map(s => <a key={s} href={`#${s}`}>{s[0].toUpperCase() + s.slice(1)}</a>)}</nav>
       <div className="hdr-right">{st && <><span className="pill">block {st.block}</span><span className="pill">ETH ${fmt(st.ethUsd)}</span><span className="pill">keeper {st.snapshot ? "snapshot" : st.keeperUpdated ? `${Math.max(0, Math.floor(Date.now() / 1000) - st.keeperUpdated)}s ago` : "–"}</span></>}</div>
     </div></header>
-    {st?.snapshot && <div className="wrap"><div className="panel" style={{ marginTop: 12 }}>Read-only snapshot of the live demo stack (a local fork of Base mainnet with the real Aqua, Uniswap v4 PoolManager and Morpho), taken at fork block {st.snapshot.block}. Trading and rebalancing are off here: clone the repo and run <code>./scripts/start_local.sh</code> to trade live.</div></div>}
+    {st?.snapshot && <div className="wrap"><div className="panel" style={{ marginTop: 12 }}>Read-only snapshot of the live demo, taken at block {st.snapshot.block}. Trading and rebalancing are off on this page.</div></div>}
 
     <main className="wrap">
       <section id="overview" className="hero">
@@ -95,7 +95,7 @@ export default function Page() {
           <div className="panel kpi"><div className="k">Liquidity, both venues</div><div className="v">{st ? usd0(u.totalValueUsd + a.totalValueUsd) : "–"}</div><div className="s">tradable this block: {st ? usd0(u.activeValueUsd + a.activeValueUsd) : "–"}</div></div>
           <div className="panel kpi"><div className="k">Earning in Morpho</div><div className="v good">{st ? usd0(u.parkedInMorphoUsd + a.inMorphoUsd) : "–"}</div><div className="s">Steakhouse USDC · Moonwell ETH vaults</div></div>
           <div className="panel kpi"><div className="k">Per-block splits on-chain</div><div className="v">{act.counts?.splits ?? "–"}</div><div className="s">{act.counts?.v4Swaps ?? 0} v4 swaps · {act.counts?.aquaSwaps ?? 0} Aqua fills · {act.counts?.sharedSwaps ?? 0} shared · {act.counts?.rebalances ?? 0} rebalances</div></div>
-          <div className="panel kpi"><div className="k">Live Base Chainlink</div><div className="v">{st?.liveBaseChainlink?.ethUsd ? `$${fmt(st.liveBaseChainlink.ethUsd)}` : "–"}</div><div className="s">{st?.mirror ? "mirrored into the fork each keeper tick" : "read directly"}</div></div>
+          <div className="panel kpi"><div className="k">Live Base Chainlink</div><div className="v">{st?.liveBaseChainlink?.ethUsd ? `$${fmt(st.liveBaseChainlink.ethUsd)}` : "–"}</div><div className="s">read live</div></div>
         </div>
       </section>
 
@@ -159,7 +159,7 @@ export default function Page() {
         <div className="grid g-2">
           <div className="panel">
             <h3>LP loss versus a perfectly rebalanced portfolio</h3>
-            <p className="why">ETH ${replay ? fmt(replay.startPrice) : "…"} → ${replay ? fmt(replay.endPrice) : "…"} (+6.24%). Every minute a rational arbitrageur trades each venue to the real Coinbase close, on a Base mainnet fork with the real v4 PoolManager and official Aqua. Same 5 bps fee and starting reserves for all.</p>
+            <p className="why">ETH ${replay ? fmt(replay.startPrice) : "…"} → ${replay ? fmt(replay.endPrice) : "…"} (+6.24%). Every minute a rational arbitrageur trades each venue to the real Coinbase close, against the real Uniswap v4 PoolManager and official Aqua on Base. Same 5 bps fee and starting reserves for all.</p>
             {replay && <BarChart height={220} vFmt={v => "$" + fmt(v, 3)} bars={replay.venues.map((v: any, i: number) => ({ label: v.name.includes("plain") ? "plain v4" : (v.name.includes("Aqua") ? "Aqua " : "hook ") + "λ" + Math.round(Number(v.lambdaWad) / 1e16) + "%", v: v.lpLossVsRebalancedUsdc6 / 1e6, color: i === 0 ? "#8b8a82" : v.name.includes("Aqua") ? "#4fd1db" : v.lambdaWad === "1000000000000000000" || v.lambdaWad === 1e18 ? "#56585e" : "#199e70" }))} />}
           </div>
           <div className="panel">

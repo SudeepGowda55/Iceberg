@@ -79,7 +79,7 @@
   "tick": 297,
   "actions": [
    {
-    "what": "mirrored live Base Chainlink ETH/USD $2,683.39 into the fork's MirrorFeed"
+    "what": "mirrored live Base Chainlink ETH/USD $2,683.39 into the price feed"
    }
   ],
   "arbs": [],

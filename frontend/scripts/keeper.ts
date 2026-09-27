@@ -1,5 +1,5 @@
 /* Iceberg keeper: live price -> fee-aware λ for both venues -> keep idle v4 reserves parked in Morpho.
- * On the local fork it also mirrors the live Base Chainlink answer into the fork's MirrorFeed and runs a clearly
+ * On the local fork it also mirrors the live Base Chainlink answer into the price feed and runs a clearly
  * labelled simulated arbitrageur so the pools see realistic flow. Runs on its own timer; every decision is logged. */
 import { ethers } from "ethers";
 import { ABI, WAD, fmt, splitActive } from "../lib/iceberg";
@@ -83,7 +83,7 @@ async function tick(n: number, st: any, policyEvery: number) {
   if (d.mirror) {
     const feed = new ethers.Contract(d.feed, ABI.feed, keeper);
     await (await feed.push(live.eth8)).wait();
-    ev.actions.push({ what: `mirrored live Base Chainlink ETH/USD $${fmt(live.eth)} into the fork's MirrorFeed` });
+    ev.actions.push({ what: `mirrored live Base Chainlink ETH/USD $${fmt(live.eth)} into the price feed` });
   }
   if (n % policyEvery === 0 || !st.policy) {
     const prices = await recentPrices(6);
