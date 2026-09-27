@@ -6,6 +6,35 @@ On a replay of the real 24 hours ending 21 Sep 2026 (ETH +6.24%), on a Base main
 
 Built at ETHGlobal Tokyo 2026 for 1inch *Build an Aqua App* and Uniswap *Best Uniswap Stack Contribution*.
 
+## Where the integrations are (for judges)
+
+**Uniswap v4:** `IcebergHook` on OpenZeppelin's `BaseCustomCurve`, live on Base mainnet at [`0xe5a6…eA88`](https://basescan.org/address/0xe5a690F6F0b10e4EE33DEFa271E8C893dd3ceA88).
+
+| What | Code |
+|---|---|
+| The hook contract (`BaseCustomCurve` + ERC-20 LP shares) | [IcebergHook.sol:35](https://github.com/SudeepGowda55/Iceberg/blob/main/contracts/v4/IcebergHook.sol#L35) |
+| Swap pricing: per-block split, x·y=k on the active reserves only, unpark from Morpho mid-swap | [IcebergHook.sol:191-212](https://github.com/SudeepGowda55/Iceberg/blob/main/contracts/v4/IcebergHook.sol#L191-L212) |
+| Per-block split of the reserves (the Partially Active AMM) | [IcebergHook.sol:164-176](https://github.com/SudeepGowda55/Iceberg/blob/main/contracts/v4/IcebergHook.sol#L164-L176) |
+| λ read from the keeper's `IcebergParams`, gas-capped with fallback | [IcebergHook.sol:177-190](https://github.com/SudeepGowda55/Iceberg/blob/main/contracts/v4/IcebergHook.sol#L177-L190) |
+| Never quote more than the pool can deliver (claims + Morpho withdrawable) | [IcebergHook.sol:137-153](https://github.com/SudeepGowda55/Iceberg/blob/main/contracts/v4/IcebergHook.sol#L137-L153) |
+| Pull parked reserves out of Morpho inside a swap | [IcebergHook.sol:154-163](https://github.com/SudeepGowda55/Iceberg/blob/main/contracts/v4/IcebergHook.sol#L154-L163) |
+| Add / remove liquidity (LP exit unparks from Morpho itself) | [IcebergHook.sol:225-268](https://github.com/SudeepGowda55/Iceberg/blob/main/contracts/v4/IcebergHook.sol#L225-L268) |
+| Park / unpark idle reserves in Morpho | [IcebergHook.sol:269-300](https://github.com/SudeepGowda55/Iceberg/blob/main/contracts/v4/IcebergHook.sol#L269-L300) |
+| Hook address mined with `HookMiner`, deployed via the CREATE2 deployer, pool initialized on the real PoolManager | [Iceberg.s.sol:127-165](https://github.com/SudeepGowda55/Iceberg/blob/main/script/Iceberg.s.sol#L127-L165) |
+| Fork tests against the real Base PoolManager | [test/fork/IcebergHookFork.t.sol](https://github.com/SudeepGowda55/Iceberg/blob/main/test/fork/IcebergHookFork.t.sol) |
+| Developer feedback | [FEEDBACK.md](https://github.com/SudeepGowda55/Iceberg/blob/main/FEEDBACK.md) |
+
+**1inch Aqua / SwapVM:** custom SwapVM instructions in an extended `AquaSwapVMRouter`, live on Base mainnet at [`0xE498…84b5`](https://basescan.org/address/0xE4989c27d45bcE9b44c4721daca0790e02BC84b5).
+
+| What | Code |
+|---|---|
+| `PAActiveReserves` (opcode 0x92): the per-block freeze | [PAActiveReserves.sol:94-120](https://github.com/SudeepGowda55/Iceberg/blob/main/contracts/iceberg/PAActiveReserves.sol#L94-L120) |
+| `ChainlinkDeviationGuard` (opcode 0x21): price check against Chainlink | [ChainlinkDeviationGuard.sol:43-53](https://github.com/SudeepGowda55/Iceberg/blob/main/contracts/iceberg/ChainlinkDeviationGuard.sol#L43-L53) |
+| `IcebergRouter`: 1inch's official router plus the two opcodes | [IcebergRouter.sol:17-22](https://github.com/SudeepGowda55/Iceberg/blob/main/contracts/iceberg/IcebergRouter.sol#L17-L22) |
+| The strategy program: Salt → guard → PAActiveReserves → FeeFlatIn → XYCSwap | [IcebergConfig.sol:49-57](https://github.com/SudeepGowda55/Iceberg/blob/main/contracts/periphery/IcebergConfig.sol#L49-L57) |
+| Morpho-vaulted inventory: withdraw on fill, deposit proceeds back | [VaultedInventoryHooks.sol:42-72](https://github.com/SudeepGowda55/Iceberg/blob/main/contracts/iceberg/VaultedInventoryHooks.sol#L42-L72) |
+| Aqua shared liquidity on 1inch's official router (SwapVM v1.0.2) | [IcebergConfig.sol:74-77](https://github.com/SudeepGowda55/Iceberg/blob/main/contracts/periphery/IcebergConfig.sol#L74-L77) |
+
 ## How it works
 
 **Algorithm 1 of the paper, every block.** On the first trade of a block, total reserves R are split into an active part λ·R and a passive part (1 − λ)·R. The passive part is frozen for the rest of the block. Every trade in that block sees only `total − passive`, on a constant-product curve with a 5 bps fee on the input. Quotes never write storage, so quote == swap.
