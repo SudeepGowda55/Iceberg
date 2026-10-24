@@ -7,6 +7,9 @@ export const NAV = [
   { href: "/contracts", label: "Contracts" },
 ];
 
+export const SITE = "https://iceberg-lp.vercel.app"; // production URL: link previews, sitemap, canonical
+// Next.js replaces (not merges) openGraph/twitter per route, so every route layout re-lists the preview image
+export const OG_IMAGE = { url: "/og.png", width: 1200, height: 627, alt: "Iceberg: a 3D iceberg whose tip above the waterline is the share of reserves arbitrage can reach" };
 export const REPO = "https://github.com/SudeepGowda55/Iceberg";
 export const scan = (a: string) => `https://basescan.org/${a.length > 42 ? "tx" : "address"}/${a}`;
 
