@@ -1,215 +1,177 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { BarChart } from "@/components/Charts";
-import { fmt, short, usd0 } from "@/lib/ui";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { motion } from "motion/react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useLayoutEffect, useMemo, useRef } from "react";
+import { CountUp, Magnetic, Marquee, Reveal, SplitText, Tilt } from "@/components/fx";
+import { Footer } from "@/components/Shell";
+import { resetScene, scene } from "@/lib/sceneStore";
+import { sweep } from "@/lib/sim";
+import { AQUA_STUDY } from "@/lib/site";
 
-type Toast = { id: number; text: string; src: string };
-const NETQ = () => (typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("net") || "local");
-const withNet = (p: string) => `${p}${p.includes("?") ? "&" : "?"}net=${NETQ()}`;
-const srcClass = (s: string) => (s === "terminal / API" ? "src-cli" : s === "UI" ? "src-ui" : s === "keeper" || s === "maker / keeper" ? "src-agent" : "");
+const IcebergScene = dynamic(() => import("@/components/IcebergScene"), { ssr: false });
 
-export default function Page() {
-  const [st, setSt] = useState<any>(null);
-  const [act, setAct] = useState<any>({ items: [], counts: {} });
-  const [replay, setReplay] = useState<any>(null);
-  const [err, setErr] = useState("");
-  const [toasts, setToasts] = useState<Toast[]>([]);
-  const [tradeMsg, setTradeMsg] = useState<any>("");
-  const [apiOut, setApiOut] = useState("");
-  const [usd, setUsd] = useState(25);
-  const seen = useRef(new Set<string>()), first = useRef(true);
+const CHAPTERS = [
+  { k: "01 · The problem", t: "A normal AMM leaves the whole pool exposed.", p: "Every time ETH moves, arbitrageurs trade the pool back to the market price, and their profit comes straight out of the LPs. In a real 24-hour replay, a plain Uniswap v4 pool lost $1.077 that way." },
+  { k: "02 · The split", t: "Every block, Iceberg freezes 1 − λ of the reserves.", p: "On the first trade of a block the reserves split. Every trade in that block sees only λ·R, priced on a constant-product curve with a 5 bps fee. Quotes never write storage, so quote == swap.", right: true },
+  { k: "03 · The yield", t: "The frozen part doesn't sit idle.", p: "Passive reserves are parked in Morpho vaults (Steakhouse USDC, Moonwell ETH) and pulled back out inside the swap, the moment a trade needs them. LPs can always exit." },
+  { k: "04 · The keeper", t: "λ isn't a constant. It's chosen.", p: "Every ~10 minutes a fee-aware keeper replays the last 6 hours of real ETH/USD at the pool's fee, simulates every λ down to the floor, and publishes the one that loses least to both venues.", right: true, bars: true },
+];
 
-  const refresh = useCallback(async () => {
-    try {
-      const [s, a] = await Promise.all([fetch(withNet("/api/status")).then(r => r.json()), fetch(withNet("/api/activity")).then(r => r.json())]);
-      if (s.error) throw new Error(s.error);
-      setSt(s); setErr("");
-      if (!a.error) {
-        const fresh: any[] = [];
-        for (const i of a.items) if (!seen.current.has(i.key)) { if (!first.current) { i.isNew = true; fresh.push(i); } seen.current.add(i.key); }
-        first.current = false;
-        setAct(a);
-        for (const f of fresh.filter(x => (x.source === "terminal / API" || x.source === "keeper") && x.kind !== "split").slice(0, 3)) {
-          const id = Math.random();
-          setToasts(t => [...t, { id, text: f.text, src: f.source }]);
-          setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 9000);
-        }
-      }
-    } catch (e: any) { setErr(`cannot reach the Iceberg stack (${e.message}) — run ./scripts/start_local.sh`); }
+export default function Home() {
+  const root = useRef<HTMLDivElement>(null), story = useRef<HTMLDivElement>(null);
+  const hudL = useRef<HTMLSpanElement>(null), hudBar = useRef<HTMLSpanElement>(null), hudDot = useRef<HTMLElement>(null), hud = useRef<HTMLDivElement>(null);
+  const sw = useMemo(() => sweep(0.0005), []);
+  const maxLoss = Math.max(...sw.rows.map(r => r.lossBps));
+
+  useLayoutEffect(() => {
+    const S = innerWidth > 900 ? 0.2 : 0;
+    resetScene({ lambda: 0.42, arb: 0.3, shift: S });
+    const ctx = gsap.context(() => {
+      // one scrubbed timeline across the story: each chapter is one unit
+      const tl = gsap.timeline({ defaults: { ease: "none", duration: 1 }, scrollTrigger: { trigger: story.current, start: "top top", end: "bottom bottom", scrub: 1.1 } });
+      tl.to(scene, { lambda: 1, danger: 1, arb: 1, zoom: 0.95, lift: 1.25, shift: S })            // 01 everything exposed
+        .to(scene, { lambda: 0.5, danger: 0, arb: 0.4, zoom: 0, orbit: -0.6, lift: 0, shift: -S }) // 02 split
+        .to(scene, { morpho: 1, orbit: 0.5, zoom: -0.2, lift: -0.55, shift: S })                 // 03 yield, camera dips
+        .to(scene, { lambda: 0.39, orbit: 1.6, zoom: 0.15, lift: 0.1, arb: 0.3, shift: -S * 1.1 });      // 04 keeper
+      // after the story, sink the scene back and dim it
+      gsap.to(".berg-fixed", { opacity: 0.25, ease: "none", scrollTrigger: { trigger: ".after", start: "top bottom", end: "top 30%", scrub: true } });
+      gsap.to(hud.current, { opacity: 0, ease: "none", scrollTrigger: { trigger: ".after", start: "top bottom", end: "top 60%", scrub: true } });
+      gsap.utils.toArray<HTMLElement>(".chapter").forEach(el => {
+        gsap.fromTo(el.querySelectorAll(".rv"), { y: 70, opacity: 0, filter: "blur(14px)" }, {
+          y: 0, opacity: 1, filter: "blur(0px)", stagger: 0.1, duration: 1.1, ease: "power3.out",
+          scrollTrigger: { trigger: el, start: "top 65%", end: "bottom 35%", toggleActions: "play reverse play reverse" },
+        });
+        gsap.fromTo(el.querySelector(".ch-num"), { yPercent: 40 }, { yPercent: -40, ease: "none", scrollTrigger: { trigger: el, start: "top bottom", end: "bottom top", scrub: true } });
+        const bars = el.querySelectorAll(".minibars div");
+        if (bars.length) gsap.fromTo(bars, { scaleY: 0 }, { scaleY: 1, stagger: 0.05, duration: 0.8, ease: "back.out(1.6)", scrollTrigger: { trigger: el, start: "top 55%", toggleActions: "play none none reverse" } });
+      });
+      gsap.fromTo(".hero-inner", { opacity: 1, y: 0 }, { opacity: 0, y: -120, ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } });
+    }, root);
+    // HUD mirrors the scene's live λ and the 2 s block clock
+    let raf = 0;
+    const loop = () => {
+      if (hudL.current) hudL.current.textContent = `${Math.round(scene.lambda * 100)}%`;
+      if (hudBar.current) hudBar.current.style.width = `${scene.lambda * 100}%`;
+      if (hudDot.current) { const b = scene.blockPhase; hudDot.current.style.opacity = String(1 - b * 0.8); hudDot.current.style.transform = `scale(${1 + (1 - b) * 0.6})`; }
+      raf = requestAnimationFrame(loop);
+    };
+    loop();
+    return () => { ctx.revert(); cancelAnimationFrame(raf); ScrollTrigger.refresh(); };
   }, []);
 
-  useEffect(() => { refresh(); fetch("/api/replay").then(r => r.json()).then(setReplay).catch(() => {}); const t = setInterval(refresh, 3000); return () => clearInterval(t); }, [refresh]);
+  return <div ref={root}>
+    <div className="berg-fixed"><IcebergScene /></div>
+    <div className="scrim" />
 
-  const VN: Record<string, string> = { v4: "Uniswap v4 hook", aqua: "1inch Aqua position", official: "1inch official router (shared liquidity)" };
-  const trade = async (venue: "v4" | "aqua" | "official", side: "buy" | "sell") => {
-    setTradeMsg(`sending a real ${side} of $${usd} to the ${VN[venue]}…`);
-    const r = await fetch(withNet(`/api/swap?venue=${venue}&side=${side}&usd=${usd}&who=ui`), { method: "POST" }).then(x => x.json());
-    setTradeMsg(r.error ? <span className="bad">{r.error}</span> : <span className="good">{r.message} · price ${fmt(r.price)} vs oracle ${fmt(r.oracle)} ({r.costBps >= 0 ? `${fmt(r.costBps, 1)} bps cost` : `${fmt(-r.costBps, 1)} bps better than oracle`}) · tx {short(r.tx)}</span>);
-    refresh();
-  };
-  const call = async (path: string, method = "GET") => {
-    setApiOut("…");
-    const r = await fetch(withNet(path), { method }).then(x => x.json()).catch(e => ({ error: String(e) }));
-    setApiOut(JSON.stringify(r, null, 2));
-    if (method === "POST") refresh();
-  };
+    <div ref={hud} className="hud glass" aria-hidden>
+      <div className="hud-row"><span>λ · reachable this block</span></div>
+      <div className="hud-row" style={{ marginTop: 6 }}><span ref={hudL} className="hud-l tnum">42%</span><span className="t2">of reserves</span></div>
+      <div className="hud-bar"><span ref={hudBar} style={{ width: "42%" }} /></div>
+      <div className="hud-block"><i ref={hudDot} />new block every 2 s on Base</div>
+    </div>
 
-  // real money on mainnet (and ~$1 positions): start the trade size at 1 cent
-  useEffect(() => { if (st?.network === "mainnet") setUsd(x => (x > 1 ? 0.01 : x)); }, [st?.network]);
-  const u = st?.uniswapV4, a = st?.oneInchAqua, sh = st?.sharedLiquidity, rb = st?.rebalance, k = st?.keeper, pol = k?.policy;
-  const [rbMsg, setRbMsg] = useState<any>("");
-  const rebalance = async () => {
-    setRbMsg("retiring the strategy, rebalancing through Uniswap, re-shipping…");
-    const r = await fetch(withNet("/api/rebalance?force=1"), { method: "POST" }).then(x => x.json());
-    setRbMsg(r.error ? <span className="bad">{r.error}</span> : <span className="good">ETH weight {fmt(r.weightBefore * 100, 2)}% → {fmt(r.weightAfter * 100, 2)}% · {r.txs.length} transactions · new strategy {short(r.newOrderHash)} (salt {r.salt})</span>);
-    refresh();
-  };
-  const best = replay?.venues?.reduce((b: any, v: any) => (!b || v.lpLossVsRebalancedUsdc6 < b.lpLossVsRebalancedUsdc6 ? v : b), null);
-  const plain = replay?.venues?.[0];
-  const savedPct = plain && best ? (1 - best.lpLossVsRebalancedUsdc6 / plain.lpLossVsRebalancedUsdc6) * 100 : null;
-  const half = replay?.venues?.find((v: any) => v.name.includes("hook, lambda 50%"));
-  const halfPct = plain && half ? (1 - half.lpLossVsRebalancedUsdc6 / plain.lpLossVsRebalancedUsdc6) * 100 : null;
-
-  const Stack = ({ active, passive, parked }: { active: number; passive: number; parked: number }) => {
-    const tot = active + passive + parked || 1;
-    return <div className="stack" role="img" aria-label={`active ${fmt(active / tot * 100, 0)}%, passive ${fmt(passive / tot * 100, 0)}%, in Morpho ${fmt(parked / tot * 100, 0)}%`}>
-      <div className="seg-active" style={{ width: `${active / tot * 100}%` }} /><div className="seg-passive" style={{ width: `${passive / tot * 100}%` }} /><div className="seg-parked" style={{ width: `${parked / tot * 100}%` }} />
-    </div>;
-  };
-
-  return <>
-    <header><div className="wrap hdr">
-      <div className="brand">Iceberg<small>{err ? <span className="bad">{err}</span> : st ? (st.network === "mainnet" ? "Base mainnet" : "Base · official Aqua, Uniswap v4 PoolManager, Morpho") : "loading…"}</small></div>
-      <nav>{["overview", "venues", "keeper", "replay", "trade", "activity", "api"].map(s => <a key={s} href={`#${s}`}>{s[0].toUpperCase() + s.slice(1)}</a>)}</nav>
-      <div className="hdr-right">{st && <><span className="pill">block {st.block}</span><span className="pill">ETH ${fmt(st.ethUsd)}</span><span className="pill">keeper {st.snapshot ? "snapshot" : st.keeperUpdated ? `${Math.max(0, Math.floor(Date.now() / 1000) - st.keeperUpdated)}s ago` : "–"}</span></>}</div>
-    </div></header>
-    {st?.snapshot && <div className="wrap"><div className="panel" style={{ marginTop: 12 }}>Read-only snapshot of the live demo, taken at block {st.snapshot.block}. Trading and rebalancing are off on this page.</div></div>}
-
-    <main className="wrap">
-      <section id="overview" className="hero">
-        <h1 style={{ fontSize: 34, lineHeight: 1.15, margin: "0 0 10px", maxWidth: 1100 }}>Only a fraction <span className="venue-aqua">λ</span> of the pool can be arbitraged in any block. The rest earns in <span className="good">Morpho</span>.</h1>
-        <p className="lede">Iceberg implements the Partially Active AMM (Ko 2026) as a <b className="venue-aqua">1inch Aqua</b> position and a <b className="venue-uni">Uniswap v4</b> hook with one shared kernel. A fee-aware keeper picks λ from recent real prices, because at high fees partial activity stops helping.</p>
-        <div className="grid g-kpi">
-          <div className="panel kpi"><div className="k">Loss to arbitrage saved, real 21 Sep replay</div><div className="v good">{savedPct != null ? `${fmt(savedPct, 1)}%` : "–"}</div><div className="s">vs a real plain v4 pool, 1,440 min, 5 bps{halfPct != null ? ` · λ 50%: ${fmt(halfPct, 1)}%` : ""}</div></div>
-          <div className="panel kpi"><div className="k">λ now (keeper)</div><div className="v">{u ? `${fmt(u.lambdaPct, 0)}%` : "–"}</div><div className="s">{pol ? `${fmt(pol.savedPct, 1)}% less loss on the last ${pol.minutes} min` : "waiting for keeper"}</div></div>
-          <div className="panel kpi"><div className="k">Liquidity, both venues</div><div className="v">{st ? usd0(u.totalValueUsd + a.totalValueUsd) : "–"}</div><div className="s">tradable this block: {st ? usd0(u.activeValueUsd + a.activeValueUsd) : "–"}</div></div>
-          <div className="panel kpi"><div className="k">Earning in Morpho</div><div className="v good">{st ? usd0(u.parkedInMorphoUsd + a.inMorphoUsd) : "–"}</div><div className="s">Steakhouse USDC · Moonwell ETH vaults</div></div>
-          <div className="panel kpi"><div className="k">Per-block splits on-chain</div><div className="v">{act.counts?.splits ?? "–"}</div><div className="s">{act.counts?.v4Swaps ?? 0} v4 swaps · {act.counts?.aquaSwaps ?? 0} Aqua fills · {act.counts?.sharedSwaps ?? 0} shared · {act.counts?.rebalances ?? 0} rebalances</div></div>
-          <div className="panel kpi"><div className="k">Live Base Chainlink</div><div className="v">{st?.liveBaseChainlink?.ethUsd ? `$${fmt(st.liveBaseChainlink.ethUsd)}` : "–"}</div><div className="s">read live</div></div>
-        </div>
-      </section>
-
-      <section id="venues"><h2>Two venues, one kernel</h2>
-        <div className="grid g-2">
-          {[["Uniswap v4 hook", u, "venue-uni"], ["1inch Aqua position", a, "venue-aqua"]].map(([name, v, cls]: any) =>
-            <div key={name} className="panel">
-              <h3 className={cls}>{name}</h3>
-              <div className="t2" style={{ fontSize: 13 }}>{v ? (cls === "venue-uni" ? `hook ${short(v.hook)} · pool ${short(v.poolId)} · ${v.feeBps} bps` : `order ${short(v.orderHash)} · ${v.feeBps} bps · inventory in Morpho vaults`) : "–"}</div>
-              {v && <>
-                <Stack active={v.activeValueUsd} passive={Math.max(0, v.totalValueUsd - v.activeValueUsd - (v.parkedInMorphoUsd ?? 0))} parked={v.parkedInMorphoUsd ?? 0} />
-                <div className="legend2"><span><i className="seg-active" />active this block {usd0(v.activeValueUsd)}</span><span><i className="seg-passive" />passive (frozen)</span>{cls === "venue-uni" && <span><i className="seg-parked" />parked in Morpho {usd0(v.parkedInMorphoUsd)}</span>}</div>
-                <div style={{ marginTop: 10 }}>
-                  <div className="kv"><span className="k">λ</span><span className="v">{fmt(v.lambdaPct, 0)}%</span></div>
-                  <div className="kv"><span className="k">reserves</span><span className="v">{fmt((v.reserves ?? v.balances).weth, 4)} WETH + {fmt((v.reserves ?? v.balances).usdc)} USDC</span></div>
-                  <div className="kv"><span className="k">active (arbitrage can reach)</span><span className="v">{fmt(v.active.weth, 4)} WETH + {fmt(v.active.usdc)} USDC</span></div>
-                  {cls === "venue-uni" ? <div className="kv"><span className="k">in pool / in Morpho</span><span className="v">{fmt(v.inPool.weth, 4)} / {fmt(v.parked.weth, 4)} WETH</span></div>
-                    : <div className="kv"><span className="k">maker's Morpho vault balances</span><span className="v">{fmt(v.inMorpho.weth, 4)} WETH + {fmt(v.inMorpho.usdc)} USDC</span></div>}
-                  <div className="kv"><span className="k">last split block</span><span className="v">{v.lastSplitBlock || "–"}</span></div>
-                </div>
-              </>}
-            </div>)}
-          {sh && <div className="panel">
-            <h3 className="venue-aqua">1inch official router · shared liquidity</h3>
-            <div className="t2" style={{ fontSize: 13 }}>order {short(sh.orderHash)} · plain 5 bps curve on 1inch&apos;s unmodified router</div>
-            <p className="why">The <b>same Morpho vault shares</b> back this strategy and the Iceberg position: Aqua lets one balance serve several strategies, and each fill withdraws exactly what it needs.</p>
-            <div className="kv"><span className="k">committed from the shared balance</span><span className="v">{fmt(sh.balances.weth, 4)} WETH + {fmt(sh.balances.usdc)} USDC ({usd0(sh.valueUsd)})</span></div>
-            <div className="kv"><span className="k">maker&apos;s Morpho balance behind both</span><span className="v">{a ? `${fmt(a.inMorpho.weth, 4)} WETH + ${fmt(a.inMorpho.usdc)} USDC` : "–"}</span></div>
-          </div>}
-          {rb && <div className="panel">
-            <h3>Weight tracking</h3>
-            <p className="why">A partially active pool lags the market, so its mix drifts. When the Aqua position&apos;s ETH weight at the live price leaves 50% ± {fmt(rb.bandPct, 1)}%, the keeper retires it, rebalances the Morpho holdings through Uniswap, and re-ships it balanced. That resets the stale price without paying arbitrageurs.</p>
-            <div className="kv"><span className="k">ETH weight now</span><span className="v">{rb.weightEthPct != null ? `${fmt(rb.weightEthPct, 2)}%` : "–"}</span></div>
-            <div className="kv"><span className="k">rebalances so far</span><span className="v">{rb.count} · strategy salt {rb.salt}</span></div>
-            <div className="btnrow"><button id="rebalance" disabled={!!st?.snapshot} onClick={rebalance}>Rebalance now</button></div>
-            <div className="result" id="rebalance-result">{rbMsg}</div>
-          </div>}
-        </div>
-      </section>
-
-      <section id="keeper"><h2>Fee-aware keeper</h2>
-        <div className="grid g-2">
-          <div className="panel">
-            <h3>Why λ = {pol ? `${fmt(k.lambda * 100, 0)}%` : "…"}</h3>
-            <p className="why">{pol ? <>On the last <b>{pol.minutes}</b> minutes of real ETH/USD (annualised vol {fmt(pol.volAnnualPct, 0)}%) at this pool&apos;s <b>{pol.feeBps} bps</b> fee, exposing {fmt(k.lambda * 100, 0)}% of the reserves loses <b className="good">{fmt(pol.bestLossBps, 3)} bps</b> to arbitrage versus <b>{fmt(pol.plainLossBps, 3)} bps</b> fully active ({fmt(pol.savedPct, 1)}% saved). At high fees the same search returns λ = 100%. λ never goes below the maker&apos;s floor of {fmt(pol.floor * 100, 0)}%, so ordinary traders always find deep liquidity.</> : "the keeper publishes its first decision within a minute"}</p>
-            {pol && <><div className="t2" style={{ fontSize: 12, marginTop: 8 }}>loss to arbitrage at each λ, as % of the fully active loss</div>
-              <BarChart height={200} vFmt={v => fmt(v, 1) + "%"} bars={pol.table.filter((t: any, i: number) => i % 2 === 0 || t.lambda === k.lambda).map((t: any) => ({ label: `λ ${fmt(t.lambda * 100, 0)}%`, v: t.lossBps / pol.table[0].lossBps * 100, color: t.lambda === k.lambda ? "#199e70" : "#56585e" }))} /></>}
+    <main className="above">
+      <div ref={story}>
+        <section className="hero wrap">
+          <div className="hero-inner">
+            <motion.div className="chips" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9, duration: 0.8 }}>
+              <span className="chip"><span className="live" />Live on Base mainnet</span>
+              <span className="chip">ETHGlobal Tokyo 2026</span>
+              <span className="chip"><span className="uni">Uniswap v4</span> · <span className="aqua">1inch Aqua</span></span>
+            </motion.div>
+            <SplitText text="Only the tip trades." className="display h-xl" delay={0.75} />
+            <Reveal delay={1.3}><p className="lede">A Partially Active AMM. In any block, arbitrageurs can reach only a fraction <span className="tip serif i" style={{ fontSize: "1.3em" }}>λ</span> of the reserves. The rest stays frozen below the waterline, and earns yield in Morpho.</p></Reveal>
+            <Reveal delay={1.5}><div className="ctas">
+              <Magnetic href="/mechanism" className="btn btn-ice">Play with λ <span aria-hidden>→</span></Magnetic>
+              <Magnetic href="/evidence" className="btn btn-ghost">See the evidence</Magnetic>
+            </div></Reveal>
           </div>
-          <div className="panel">
-            <h3>Last keeper tick</h3>
-            {k ? <div className="feed" style={{ maxHeight: 300 }}>
-              <div className="ev">live Base ETH/USD ${fmt(k.live?.ethUsd)} ({k.live?.ageSeconds}s old)</div>
-              {k.actions.map((x: any, i: number) => <div key={i} className="ev">{x.what}{x.tx && <span className="muted"> · tx {short(x.tx)}</span>}</div>)}
-              {k.arbs.map((x: any, i: number) => <div key={"a" + i} className="ev"><span className="srcpill">simulated arbitrageur</span> {x.error ? x.error : `${x.side} on ${x.venue}: pool $${fmt(x.poolPrice)} → live $${fmt(x.livePrice)}`}</div>)}
-            </div> : <div className="empty">no keeper tick yet</div>}
-          </div>
-        </div>
-      </section>
+          <div className="scroll-cue wrap"><i />Scroll to sink it</div>
+        </section>
 
-      <section id="replay"><h2>Real replay: 24 hours ending 21 Sep 2026 20:31 UTC</h2>
-        <div className="grid g-2">
-          <div className="panel">
-            <h3>LP loss versus a perfectly rebalanced portfolio</h3>
-            <p className="why">ETH ${replay ? fmt(replay.startPrice) : "…"} → ${replay ? fmt(replay.endPrice) : "…"} (+6.24%). Every minute a rational arbitrageur trades each venue to the real Coinbase close, against the real Uniswap v4 PoolManager and official Aqua on Base. Same 5 bps fee and starting reserves for all.</p>
-            {replay && <BarChart height={220} vFmt={v => "$" + fmt(v, 3)} bars={replay.venues.map((v: any, i: number) => ({ label: v.name.includes("plain") ? "plain v4" : (v.name.includes("Aqua") ? "Aqua " : "hook ") + "λ" + Math.round(Number(v.lambdaWad) / 1e16) + "%", v: v.lpLossVsRebalancedUsdc6 / 1e6, color: i === 0 ? "#8b8a82" : v.name.includes("Aqua") ? "#4fd1db" : v.lambdaWad === "1000000000000000000" || v.lambdaWad === 1e18 ? "#56585e" : "#199e70" }))} />}
+        {CHAPTERS.map((c, i) => <section key={i} className={`chapter wrap ${c.right ? "right" : ""}`} style={{ position: "relative" }}>
+          <div className="ch-num" aria-hidden style={c.right ? { left: 0, right: "auto" } : {}}>{String(i + 1).padStart(2, "0")}</div>
+          <div className="body">
+            <div className="kicker rv">{c.k}</div>
+            <h2 className="display h-m rv" style={{ margin: "22px 0 0" }}>{c.t}</h2>
+            <p className="rv">{c.p}</p>
+            {i === 1 && <div className="legend-dots rv"><span><i style={{ background: "var(--tip)" }} />active · λ·R</span><span><i style={{ background: "var(--frozen)" }} />frozen · (1 − λ)·R</span></div>}
+            {i === 2 && <div className="legend-dots rv"><span><i style={{ background: "var(--morpho)" }} />earning in Morpho</span><span className="t2">unparked mid-swap when needed</span></div>}
+            {c.bars && <div className="rv">
+              <div className="minibars" role="img" aria-label={`Loss at each λ on 21 Sep at 5 bps; best λ ${Math.round(sw.best.lambda * 100)}%`}>
+                {sw.rows.map(r => <div key={r.lambda} className={r === sw.best ? "best" : ""} style={{ height: `${(r.lossBps / maxLoss) * 100}%` }}><span>{Math.round(r.lambda * 100)}</span></div>)}
+              </div>
+              <p style={{ fontSize: 14, marginTop: 36 }} className="muted">The keeper's search, re-run in your browser on the real 21 Sep prices at 5 bps: λ {Math.round(sw.best.lambda * 100)}% loses {((1 - sw.best.lossBps / sw.plain.lossBps) * 100).toFixed(1)}% less than fully active.</p>
+            </div>}
           </div>
-          <div className="panel">
-            <h3>What it shows</h3>
-            <ul className="limit">
-              <li>λ = 100% reproduces the real plain Uniswap v4 pool (difference {plain && replay ? fmt(Math.abs(replay.venues[1].lpLossVsRebalancedUsdc6 - plain.lpLossVsRebalancedUsdc6) / plain.lpLossVsRebalancedUsdc6 * 100, 2) : "–"}%).</li>
-              <li>The v4 hook and the 1inch Aqua position lose exactly the same at the same λ: one kernel, two venues.</li>
-              <li>At 5 bps, exposing half the pool cut the loss {halfPct != null ? fmt(halfPct, 1) : "–"}%, and the keeper tunes λ to each pool's fee.</li>
-            </ul>
-            <div className="code">REPLAY_MINUTES=1440 BASE_RPC_URL=https://mainnet.base.org forge test --match-contract Replay21Sep -vv</div>
+        </section>)}
+      </div>
+
+      <div className="after">
+        <section className="section wrap">
+          <Reveal><div className="kicker">Measured, not modelled</div></Reveal>
+          <SplitText as="h2" text="On the real 24 hours of 21 Sep, LPs lost less." className="display h-l" />
+          <div className="stats">
+            {[
+              { n: <CountUp to={17.6} decimals={1} prefix="−" suffix="%" />, d: "less LP loss to arbitrage at λ 50%, vs a real plain Uniswap v4 pool at the same 5 bps fee", c: "grad-m" },
+              { n: <CountUp to={19.3} decimals={1} prefix="−" suffix="%" />, d: "at λ 39%. 1,440 one-minute steps on a Base mainnet fork, real PoolManager and official Aqua", c: "grad-m" },
+              { n: <CountUp to={52} />, d: "Solidity tests, including 22 fork tests against the real Base contracts", c: "grad" },
+              { n: <CountUp to={0.2} decimals={2} prefix="$" />, d: "of gas for the full 64-transaction mainnet flow, rehearsed on a fork first", c: "grad" },
+              { n: <CountUp to={0} />, d: "wei of price difference between the Aqua position and the v4 hook at the same λ and fee", c: "grad" },
+              { n: <CountUp to={AQUA_STUDY.neverFilledPct} decimals={1} suffix="%" />, d: `of the ${AQUA_STUDY.strategies} Aqua strategies on Base never got a single fill. Idle liquidity is the default`, c: "hot" },
+            ].map((s, i) => <Reveal key={i} delay={(i % 3) * 0.08} className="stat"><div className={`n ${s.c}`}>{s.n}</div><div className="d">{s.d}</div></Reveal>)}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="trade"><h2>Trade against both venues</h2>
-        <div className="panel">
-          <div className="row"><span className="t2">size $</span><input type="number" value={usd} min={0.01} step={0.01} max={2000} onChange={e => setUsd(Number(e.target.value) || 1)} style={{ width: 90 }} /></div>
-          <div className="btnrow">
-            <button id="buy-v4" disabled={!!st?.snapshot} className="primary" onClick={() => trade("v4", "buy")}>Buy ETH on Uniswap v4</button>
-            <button id="sell-v4" disabled={!!st?.snapshot} onClick={() => trade("v4", "sell")}>Sell ETH on Uniswap v4</button>
-            <button id="buy-aqua" disabled={!!st?.snapshot} className="primary" onClick={() => trade("aqua", "buy")}>Buy ETH on 1inch Aqua</button>
-            <button id="sell-aqua" disabled={!!st?.snapshot} onClick={() => trade("aqua", "sell")}>Sell ETH on 1inch Aqua</button>
-            {sh && <><button id="buy-official" disabled={!!st?.snapshot} onClick={() => trade("official", "buy")}>Buy on 1inch official router</button>
-            <button id="sell-official" disabled={!!st?.snapshot} onClick={() => trade("official", "sell")}>Sell on 1inch official router</button></>}
+        <section className="section wrap" style={{ paddingTop: 0 }}>
+          <Reveal><div className="kicker">One kernel, two venues</div></Reveal>
+          <SplitText as="h2" text="Same reserves. Same λ. Same price, to the wei." className="display h-l" />
+          <div className="venues">
+            <Reveal><Tilt className="venue glass">
+              <div className="glow" style={{ background: "var(--uni)" }} />
+              <span className="chip"><span className="uni">●</span> Uniswap v4</span>
+              <h3>IcebergHook</h3>
+              <p>A hook on OpenZeppelin's BaseCustomCurve that owns the reserves as ERC-6909 claims. Each block the passive part freezes; idle reserves are parked in Morpho and unparked inside the swap.</p>
+              <ul><li><b>Pricing</b>x·y = k on the active reserves only</li><li><b>Idle funds</b>parked in Morpho, never more than 1 − max λ</li><li><b>Address</b><span className="mono">0xe5a6…eA88</span></li></ul>
+            </Tilt></Reveal>
+            <Reveal delay={0.1}><Tilt className="venue glass">
+              <div className="glow" style={{ background: "var(--aqua)" }} />
+              <span className="chip"><span className="aqua">●</span> 1inch Aqua · SwapVM</span>
+              <h3>PAActiveReserves <span className="mono muted" style={{ fontSize: 18 }}>0x92</span></h3>
+              <p>A SwapVM instruction in a free opcode slot, followed by 1inch's stock FeeFlatIn and XYCSwap. The maker holds only Morpho vault shares; each fill withdraws exactly what it needs.</p>
+              <ul><li><b>Program</b>Salt → guard → PAActiveReserves → FeeFlatIn → XYCSwap</li><li><b>Shared liquidity</b>the same vault shares back a strategy on 1inch's official router</li><li><b>Address</b><span className="mono">0xE498…84b5</span></li></ul>
+            </Tilt></Reveal>
           </div>
-          <div className="result" id="trade-result">{tradeMsg}</div>
-        </div>
-      </section>
+          <Reveal><div className="parity glass">
+            <div className="eq">quote<sub className="mono" style={{ fontSize: 13 }}>v4</sub> <span className="tip">==</span> quote<sub className="mono" style={{ fontSize: 13 }}>aqua</sub></div>
+            <div className="vals"><span>LP loss λ 50%, hook: <b className="morpho">$0.888</b></span><span>LP loss λ 50%, Aqua: <b className="morpho">$0.888</b></span></div>
+          </div></Reveal>
+        </section>
 
-      <section id="activity"><h2>On-chain activity</h2>
-        <div className="panel feed">
-          {act.items.length ? act.items.map((i: any) => <div key={i.key} className={`ev${i.isNew ? " fresh" : ""}`}><span className={`srcpill ${srcClass(i.source)}`}>{i.source}</span> {i.text} <span className="muted">· block {i.block} · tx {st?.network === "mainnet" ? <a href={`https://basescan.org/tx/${i.tx}`} target="_blank" rel="noreferrer">{short(i.tx)} ↗</a> : short(i.tx)}</span></div>) : <div className="empty">no activity yet</div>}
-        </div>
-      </section>
+        <Marquee items={["Uniswap v4", "1inch Aqua", "SwapVM", "Morpho", "Chainlink", "Base", "OpenZeppelin hooks", "Foundry"]} />
 
-      <section id="api"><h2>API</h2>
-        <div className="panel">
-          <div className="btnrow">
-            <button onClick={() => call("/api/status")}>GET /api/status</button>
-            <button onClick={() => call(`/api/quote?venue=v4&side=buy&usd=${usd}`)}>GET /api/quote (v4)</button>
-            <button onClick={() => call(`/api/quote?venue=aqua&side=buy&usd=${usd}`)}>GET /api/quote (Aqua)</button>
-            <button onClick={() => call(`/api/swap?venue=aqua&side=buy&usd=${usd}`, "POST")}>POST /api/swap</button>
+        <section className="section wrap">
+          <Reveal><div className="kicker">Go deeper</div></Reveal>
+          <SplitText as="h2" text="Pick a way in." className="display h-l" />
+          <div className="paths">
+            {[
+              { href: "/mechanism", t: "Mechanism", p: "Drag λ, change the fee, replay the real day in your browser.", c: "var(--tip)" },
+              { href: "/evidence", t: "Evidence", p: "The fork replay, the tests, the Aqua-on-Base study, with the command for each.", c: "var(--morpho)" },
+              { href: "/live", t: "Live", p: "Both venues, the keeper's last decision, real swaps, the on-chain feed.", c: "var(--uni)" },
+              { href: "/contracts", t: "Contracts", p: "Every Base mainnet address and the transactions that prove it trades.", c: "var(--aqua)" },
+            ].map((x, i) => <Reveal key={x.href} delay={i * 0.07}><Tilt className="glass" style={{ borderRadius: "var(--r)" }}>
+              <Link href={x.href} className="path" data-cursor>
+                <div><div className="t" style={{ color: x.c }}>{x.t}</div><p>{x.p}</p></div>
+                <div className="go"><span>0{i + 1}</span><span className="arrow">→</span></div>
+              </Link>
+            </Tilt></Reveal>)}
           </div>
-          <div className="code" style={{ marginTop: 12 }}>curl -s -X POST &quot;localhost:8788/api/swap?venue=v4&amp;side=buy&amp;usd=50&quot; | jq</div>
-          <pre className="code" style={{ whiteSpace: "pre", maxHeight: 320, overflow: "auto", marginTop: 10 }} id="api-out">{apiOut || "responses appear here"}</pre>
-        </div>
-      </section>
-
-      <footer className="muted" style={{ padding: "30px 0", fontSize: 13 }}>Iceberg · PA-AMM (Ko 2026, arXiv 2602.09887) on official 1inch Aqua & SwapVM and Uniswap v4 (OpenZeppelin BaseCustomCurve) · related work: Tide (Tokyo 2026), Barker (ETHOnline 2026)</footer>
+        </section>
+        <Footer />
+      </div>
     </main>
-    <div id="toasts">{toasts.map(t => <div key={t.id} className="toast">{t.text}<div className={`tsrc ${srcClass(t.src)}`}>from {t.src}</div></div>)}</div>
-  </>;
+  </div>;
 }

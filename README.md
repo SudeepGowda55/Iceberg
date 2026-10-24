@@ -109,7 +109,7 @@ git clone --recurse-submodules <repo> iceberg && cd iceberg
 (cd lib/swap-vm && yarn install --ignore-scripts) && npm install && (cd frontend && npm install)
 forge build
 ./scripts/test_all.sh            # every Solidity test + a fresh local stack + end-to-end check + terminal demo
-open http://localhost:8788/      # UI; the terminal demo: (cd frontend && PAUSE=1 npx tsx scripts/demo.ts)
+open http://localhost:8788/live  # live dashboard (site: / · /mechanism · /evidence · /contracts); the terminal demo: (cd frontend && PAUSE=1 npx tsx scripts/demo.ts)
 ./scripts/stop_local.sh
 ```
 

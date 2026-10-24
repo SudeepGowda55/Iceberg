@@ -1,6 +1,6 @@
 # Iceberg demo run-of-show (about 4 minutes, split screen)
 
-**Left:** terminal in `iceberg/`. **Right:** browser at `http://localhost:8788/`.
+**Left:** terminal in `iceberg/`. **Right:** browser at `http://localhost:8788/live` (the live dashboard; `/` is the animated landing page).
 Everything fired from the terminal shows up in the UI as a pop-up and a feed row labelled **"terminal / API"**. UI clicks show up in the API and the feed as **"UI"**. The keeper's actions are labelled **"keeper"**.
 
 Optional third pane: `(cd frontend && npm run watch)` prints every on-chain event live (swaps on all three venues, splits, vault moves, parking, λ updates, rebalances, keeper ticks), the same feed as the UI.
@@ -24,4 +24,4 @@ Before going on stage: run `./scripts/start_local.sh` (or open the mainnet deplo
 
 **If something fails live:** the scripted terminal demo prints the same steps with real transactions. The replay numbers come from a committed JSON (`research/replay_2026-09-21_1440min.json`), so the evidence panel never depends on the network.
 
-**Mainnet:** after `CONFIRM=yes ./scripts/deploy_mainnet.sh`, run the keeper with `NETWORK=mainnet` and open `http://localhost:8788/?net=mainnet`. Every transaction hash is in `deployments/mainnet.log`.
+**Mainnet:** after `CONFIRM=yes ./scripts/deploy_mainnet.sh`, run the keeper with `NETWORK=mainnet` and open `http://localhost:8788/live?net=mainnet`. Every transaction hash is in `deployments/mainnet.log`.

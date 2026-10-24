@@ -97,5 +97,5 @@ const wait = () => PAUSE ? new Promise<void>(r => { const rl = readline.createIn
   console.log(`  v4 pool: ${fmt(Number(h2.inPoolWeth) / 1e18, 4)} WETH in the pool, ${fmt(Number(h2.parkedWeth) / 1e18, 4)} WETH in Moonwell ETH · max λ ${fmt(Number(h2.maxLambdaWad) / 1e16, 0)}% so parking can never starve a block's active share`);
   const counts = (await b.activity(d.deployBlock || 0, {})).counts;
   console.log(`  on-chain so far: ${counts.splits} splits, ${counts.v4Swaps} v4 swaps, ${counts.aquaSwaps} Aqua fills, ${counts.vaultMoves} vault moves, ${counts.parks} park/unpark, ${counts.lambdaUpdates} λ updates`);
-  console.log(`\n${c.b}${c.g}Done.${c.r} UI http://localhost:8788/  ·  API curl -s localhost:8788/api/status | jq`);
+  console.log(`\n${c.b}${c.g}Done.${c.r} UI http://localhost:8788/live  ·  API curl -s localhost:8788/api/status | jq`);
 })().catch(e => { console.error(e.shortMessage || e.message); process.exit(1); });

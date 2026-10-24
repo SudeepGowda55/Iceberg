@@ -1,4 +1,5 @@
 "use client";
+import { motion } from "motion/react";
 import { useRef, useState } from "react";
 import { fmt, HEX } from "@/lib/ui";
 
@@ -55,7 +56,8 @@ export function BarChart({ bars, vFmt = (v: number) => fmt(v, 0), height = 210 }
       {bars.map((b, i) => {
         const h = Math.max(1, b.v / max * (H - T - B)), x = L + slot * i + (slot - bw) / 2, y = H - B - h, r = Math.min(4, h);
         return <g key={b.label}>
-          <path d={`M${x},${H - B} V${y + r} Q${x},${y} ${x + r},${y} H${x + bw - r} Q${x + bw},${y} ${x + bw},${y + r} V${H - B} Z`} fill={b.color}><title>{`${b.label}: ${vFmt(b.v)}`}</title></path>
+          <motion.path d={`M${x},${H - B} V${y + r} Q${x},${y} ${x + r},${y} H${x + bw - r} Q${x + bw},${y} ${x + bw},${y + r} V${H - B} Z`} fill={b.color} style={{ transformBox: "fill-box", transformOrigin: "bottom" }}
+            initial={{ scaleY: 0 }} whileInView={{ scaleY: 1 }} viewport={{ once: true }} transition={{ type: "spring", stiffness: 110, damping: 16, delay: i * 0.06 }}><title>{`${b.label}: ${vFmt(b.v)}`}</title></motion.path>
           <text x={x + bw / 2} y={y - 6} textAnchor="middle" fill="var(--text)" fontSize="12">{vFmt(b.v)}</text>
           <text x={x + bw / 2} y={H - 10} textAnchor="middle" fill="var(--text2)" fontSize="12">{b.label}</text></g>;
       })}

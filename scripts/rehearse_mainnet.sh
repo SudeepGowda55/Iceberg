@@ -42,4 +42,4 @@ console.log('   net change in value: \$' + dV.toFixed(4) + ' (Rs ' + (dV*inr).to
 " "$START_ETH" "$START_USDC" "$END_ETH" "$END_USDC" "$ETHPX"
 echo "cost report (what this exact run would cost on real Base mainnet)"
 FORK_RPC=$R UPSTREAM=$UPSTREAM npx tsx scripts/rehearsal-cost.ts "$FORK_BLOCK" "$ME" "$REAL_GAS" "$START_USD" "$END_USD" "$ETHPX" | sed 's/^/   /'
-echo "UI against this rehearsal: (cd frontend && WI_ROOT=.. npx next start -p 8788) then http://localhost:8788/?net=$NET · stop fork: kill \$(cat .run/rehearsal.pid)"
+echo "UI against this rehearsal: (cd frontend && WI_ROOT=.. npx next start -p 8788) then http://localhost:8788/live?net=$NET · stop fork: kill \$(cat .run/rehearsal.pid)"
